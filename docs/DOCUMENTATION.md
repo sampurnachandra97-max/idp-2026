@@ -145,7 +145,7 @@ Interactive documentation is available at <http://127.0.0.1:8000/docs> while the
 | Method | Path | Purpose | Sign-in |
 | --- | --- | --- | --- |
 | `GET` | `/api/health` | Service status; returns `503` if the database is unavailable | No |
-| `POST` | `/api/auth/signup` | Create an account | No |
+| `POST` | `/api/auth/signup` | Create an account, or sign in if it already exists with this password | No |
 | `POST` | `/api/auth/login` | Sign in, or start an account for a new email | No |
 | `POST` | `/api/auth/logout` | End the session | No |
 | `GET` | `/api/auth/me` | The signed-in user | Yes |
@@ -207,7 +207,7 @@ Lists are shortened here for clarity.
 | --- | --- |
 | `400` | A new account was requested with a password under 8 characters |
 | `401` | Not signed in, or the password is incorrect |
-| `409` | An account with this email already exists |
+| `409` | An account with this email exists and the password does not match it |
 | `422` | A value is missing or outside its accepted range |
 | `429` | Too many failed sign-ins; try again in 15 minutes |
 

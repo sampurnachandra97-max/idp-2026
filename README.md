@@ -119,7 +119,7 @@ npm install
 npm run dev
 ```
 
-Open <http://localhost:3000> and sign in with any email and a password of at least 8 characters.
+Open <http://localhost:3000> and sign in with any email and a password of at least 8 characters. For configuration, retraining, the API and deployment, see the [full documentation](docs/DOCUMENTATION.md).
 
 ### Configuration
 
@@ -189,7 +189,7 @@ frontend/
   app/            Landing page, sign-in and dashboard routes
   components/     Sign-in form, analyzer and model performance views
   lib/            ASCII artwork, validation, session and shared types
-docs/             README screenshots
+docs/             Full documentation and README screenshots
 ```
 
 ## Limitations

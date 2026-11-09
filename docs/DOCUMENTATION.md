@@ -29,6 +29,14 @@ It has two parts:
 
 You need Python 3.11 or newer and Node.js 22 or newer.
 
+**Fastest way:** after cloning, run this from the project folder. It creates the environment, installs dependencies and trains the models the first time, then starts the API and website, and restarts the API if it crashes. Press Ctrl+C to stop.
+
+```bash
+python dev.py
+```
+
+The steps below do the same thing by hand.
+
 ### 1. Get the code
 
 ```bash
@@ -136,7 +144,7 @@ Interactive documentation is available at <http://127.0.0.1:8000/docs> while the
 
 | Method | Path | Purpose | Sign-in |
 | --- | --- | --- | --- |
-| `GET` | `/api/health` | Service status | No |
+| `GET` | `/api/health` | Service status; returns `503` if the database is unavailable | No |
 | `POST` | `/api/auth/signup` | Create an account | No |
 | `POST` | `/api/auth/login` | Sign in, or start an account for a new email | No |
 | `POST` | `/api/auth/logout` | End the session | No |

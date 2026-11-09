@@ -88,6 +88,8 @@ flowchart LR
 
 **Prerequisites:** Python 3.11 or newer, and Node.js 22 or newer.
 
+**Fastest way:** after cloning, run `python dev.py` from the project folder. It sets everything up the first time, starts the API and website, and restarts the API if it crashes. The steps below do the same thing by hand.
+
 **1. Clone the repository**
 
 ```bash

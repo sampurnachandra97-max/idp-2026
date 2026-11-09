@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import re
 from collections.abc import AsyncIterator
@@ -9,11 +10,13 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Cookie, Depends, FastAPI, HTTPException, Request, Response, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
 
 from app.auth import SESSION_SECONDS, AuthStore, EmailTaken, TooManyAttempts
 from app.engine import Engine
 
+logger = logging.getLogger("uvicorn.error")
 SESSION_COOKIE = "si_session"
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 MIN_PASSWORD_LENGTH = 8
@@ -93,9 +96,20 @@ def current_user(
 CurrentUser = Annotated[dict, Depends(current_user)]
 
 
+@app.exception_handler(Exception)
+async def unexpected_error(request: Request, error: Exception) -> JSONResponse:
+    # The full error goes to the server log, and never to the browser.
+    logger.error("Unhandled error on %s %s", request.method, request.url.path, exc_info=error)
+    return JSONResponse({"detail": "Something went wrong. Please try again."}, status_code=500)
+
+
 @app.get("/api/health")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
+def health(request: Request, response: Response) -> dict[str, str]:
+    """Reports whether the service can really handle requests, not just that it is up."""
+    database = "ok" if request.app.state.auth.is_healthy() else "unavailable"
+    if database != "ok":
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    return {"status": "ok" if database == "ok" else "degraded", "database": database, "models": "ok"}
 
 
 @app.post("/api/auth/signup", status_code=status.HTTP_201_CREATED)

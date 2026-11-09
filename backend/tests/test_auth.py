@@ -10,6 +10,39 @@ SAMPLE = {
 }
 
 
+def test_health_reports_a_working_service(anon):
+    response = anon.get("/api/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok", "database": "ok", "models": "ok"}
+
+
+def test_health_reports_a_broken_database(anon, monkeypatch):
+    monkeypatch.setattr(anon.app.state.auth, "is_healthy", lambda: False)
+    response = anon.get("/api/health")
+    assert response.status_code == 503
+    assert response.json()["status"] == "degraded"
+
+
+def test_unexpected_errors_stay_private():
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
+    with TestClient(app, raise_server_exceptions=False) as client:
+        original = app.state.auth.authenticate
+
+        def explode(*_):
+            raise RuntimeError("secret internal detail")
+
+        app.state.auth.email_exists = lambda _: True
+        app.state.auth.authenticate = explode
+        response = client.post("/api/auth/login", json=LOGIN)
+        app.state.auth.authenticate = original
+    assert response.status_code == 500
+    assert "secret" not in response.text
+    assert response.json()["detail"] == "Something went wrong. Please try again."
+
+
 def test_signup_signs_the_user_in(anon):
     response = anon.post("/api/auth/signup", json=USER)
     assert response.status_code == 201

@@ -395,7 +395,6 @@ legend {
 .panels {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  align-items: start;
   gap: 16px;
 }
 
@@ -439,6 +438,18 @@ legend {
 .status-act { color: var(--act); }
 
 /* Indicator rows */
+.panels > .card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Rows share the card's height, so paired cards end on the same line. */
+.readings {
+  flex: 1;
+  display: grid;
+  grid-auto-rows: 1fr;
+}
+
 .reading {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr) 96px 104px;
@@ -563,6 +574,7 @@ legend {
 }
 
 .show-more {
+  align-self: flex-start;
   margin-top: 8px;
   padding: 0;
   border: 0;
@@ -655,7 +667,7 @@ td.num {
 
 @media (max-width: 860px) {
   .dash {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .dash-side {
@@ -675,10 +687,24 @@ td.num {
   }
 
   .dash-nav {
+    display: flex;
     order: 3;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     flex-basis: 100%;
+    min-width: 0;
     margin-top: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .dash-nav button {
+    flex: none;
+    width: auto;
+    white-space: nowrap;
+  }
+
+  .reading {
+    grid-template-columns: 34px minmax(0, 1fr) auto auto;
+    gap: 8px;
   }
 
   .dash-identity,
@@ -742,8 +768,4 @@ td.num {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .reading {
-    grid-template-columns: 34px minmax(0, 1fr) auto auto;
-    gap: 8px;
-  }
 }

@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+backend/artifacts/
+backend/data/*.db
+backend/data/*.db-*
+
+# Node
+node_modules/
+.next/
+*.tsbuildinfo
+next-env.d.ts
+coverage/
+
+# Licensed font files: do not publish without a web licence that allows it
+frontend/public/fonts/*.woff2
+frontend/public/fonts/*.woff
+frontend/public/fonts/*.otf
+frontend/public/fonts/*.ttf
+
+.env*
+.DS_Store

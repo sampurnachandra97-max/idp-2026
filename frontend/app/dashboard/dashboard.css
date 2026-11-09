@@ -1,0 +1,749 @@
+.dash {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  min-height: 100svh;
+  background: var(--page);
+}
+
+/* Sidebar */
+.dash-side {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+  padding: 22px 16px 16px;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.dash-side > .logo {
+  padding: 0 8px;
+  font-size: 16px;
+}
+
+.dash-nav {
+  display: grid;
+  gap: 2px;
+  margin-top: 28px;
+}
+
+.dash-nav button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.dash-nav button svg {
+  flex: none;
+}
+
+.dash-nav button:hover,
+.dash-nav button[aria-current="page"] {
+  background: var(--page);
+  color: var(--ink);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.dash-account {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px 10px;
+  margin-top: auto;
+  padding: 14px 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.dash-avatar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dash-identity {
+  min-width: 0;
+  font-size: 13px;
+  line-height: 17px;
+}
+
+.dash-user {
+  display: block;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-email {
+  display: block;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-signout {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.dash-signout:hover {
+  background: var(--page);
+}
+
+/* Main column */
+.dash-body {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px clamp(16px, 2.6vw, 36px) 40px;
+}
+
+section[id] {
+  scroll-margin-top: 20px;
+}
+
+.dash-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 18px 20px;
+}
+
+.card h2 {
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: var(--tracking-caption);
+}
+
+/* Sample bar */
+.sample-form {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) auto;
+  grid-template-areas:
+    "title title presets"
+    "soil climate action";
+  align-items: end;
+  gap: 12px 24px;
+}
+
+.sample-form h2 {
+  grid-area: title;
+  margin: 0;
+}
+
+.sample-form fieldset:nth-of-type(1) { grid-area: soil; }
+.sample-form fieldset:nth-of-type(2) {
+  grid-area: climate;
+  padding-left: 24px;
+  border-left: 1px solid var(--line);
+}
+
+legend {
+  padding: 0;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.field-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.field-input {
+  position: relative;
+  display: block;
+}
+
+.field-input small {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.field input {
+  width: 100%;
+  height: 40px;
+  padding: 0 44px 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.field input:focus-visible {
+  border-color: var(--ink);
+  outline: 1px solid var(--ink);
+  outline-offset: 0;
+}
+
+.field input[aria-invalid="true"] {
+  border-color: var(--act);
+}
+
+.field-error {
+  color: var(--act);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.button {
+  grid-area: action;
+  height: 40px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.button:hover {
+  background: #3a3a3a;
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.presets {
+  grid-area: presets;
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.segment {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--page);
+}
+
+.segment button {
+  height: 26px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.segment button:hover {
+  color: var(--ink);
+}
+
+.segment button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+/* Results */
+.results {
+  display: grid;
+  gap: 16px;
+  transition: opacity 160ms ease;
+}
+
+.results[aria-busy="true"] {
+  opacity: 0.6;
+}
+
+.results h1,
+.dash-section > h1 {
+  font-size: clamp(24px, 2.2vw, 30px);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: var(--tracking-statement);
+}
+
+.dash-main {
+  display: grid;
+  gap: 16px;
+}
+
+/* One strip with dividers reads calmer than four separate boxes. */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.kpis-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.kpis .card {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  padding: 16px 20px;
+}
+
+.kpis .card + .card {
+  border-left: 1px solid var(--line);
+}
+
+.kpis dt {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.kpis dd {
+  margin-top: 2px;
+  font-size: 30px;
+  line-height: 36px;
+  letter-spacing: var(--tracking-statement);
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-crop {
+  text-transform: capitalize;
+}
+
+.panels {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+.panels > .card {
+  grid-column: span 6;
+}
+
+.panels > .panel-actions {
+  grid-column: span 8;
+}
+
+.panels > .panel-crops {
+  grid-column: span 4;
+}
+
+.notice {
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--watch);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.empty {
+  color: var(--muted);
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.status-icon {
+  flex: none;
+}
+
+.status-ok { color: var(--ok); }
+.status-watch { color: var(--watch); }
+.status-act { color: var(--act); }
+
+/* Indicator rows */
+.reading {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 96px 104px;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 6px 0;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.reading-name small {
+  display: block;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 15px;
+}
+
+.reading-value {
+  font-weight: 500;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.reading-value small {
+  font-size: 11px;
+}
+
+.reading-status {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+/* Crops */
+.crops li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 5px 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.icon-tile {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--page);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-caption);
+}
+
+.crops .icon-tile {
+  grid-row: span 2;
+}
+
+.crop-name {
+  text-transform: capitalize;
+}
+
+.crop-fit {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.crop-bar {
+  grid-column: 2 / -1;
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--grass);
+}
+
+/* Actions */
+.action-list li {
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.action-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 10px;
+  margin-bottom: 2px;
+}
+
+.action-head strong {
+  font-weight: 600;
+}
+
+.action-head .status {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--page);
+  font-size: 12px;
+  line-height: 18px;
+  align-items: center;
+}
+
+.action-source {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.action-list p {
+  color: var(--muted);
+}
+
+/* Model performance */
+.dash-section:not([hidden]) {
+  display: grid;
+  gap: 14px;
+}
+
+.show-more {
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.section-note {
+  max-width: 68em;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  padding: 2px 20px;
+}
+
+table {
+  width: 100%;
+  min-width: 800px;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+th, td {
+  padding: 11px 18px 11px 0;
+  border-bottom: 1px solid var(--line);
+  font-weight: 400;
+  text-align: left;
+}
+
+thead th {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 17px;
+  vertical-align: bottom;
+}
+
+tbody th,
+.strong {
+  font-weight: 600;
+}
+
+tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+th.num,
+td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-credits {
+  max-width: 76em;
+  margin-top: 28px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 18px;
+}
+
+@media (max-width: 1240px) {
+  .sample-form {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "title presets"
+      "soil soil"
+      "climate action";
+  }
+
+  .sample-form fieldset:nth-of-type(2) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .panels > .card,
+  .panels > .panel-actions,
+  .panels > .panel-crops {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 860px) {
+  .dash {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-side {
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    height: auto;
+    padding: 12px 16px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .dash-side > .logo {
+    padding: 0;
+  }
+
+  .dash-nav {
+    order: 3;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex-basis: 100%;
+    margin-top: 10px;
+  }
+
+  .dash-identity,
+  .dash-avatar {
+    display: none;
+  }
+
+  .dash-account {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .dash-signout {
+    padding: 0 14px;
+  }
+
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kpis .card:nth-child(3) {
+    border-left: 0;
+  }
+
+  .kpis .card:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
+
+  .kpis-three {
+    grid-template-columns: 1fr;
+  }
+
+  .kpis-three .card + .card {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .sample-form {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "title"
+      "presets"
+      "soil"
+      "climate"
+      "action";
+  }
+
+  .presets {
+    justify-self: start;
+  }
+
+  .sample-form fieldset:nth-of-type(2) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .field-grid {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reading {
+    grid-template-columns: 34px minmax(0, 1fr) auto auto;
+    gap: 8px;
+  }
+}

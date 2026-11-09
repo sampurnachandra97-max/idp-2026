@@ -173,12 +173,12 @@ function Results({ result, busy }: { result: Analysis; busy: boolean }) {
 
         <section className="card">
           <h2>Measured</h2>
-          <ul>{result.measured.map((reading) => <IndicatorRow key={reading.key} reading={reading} />)}</ul>
+          <ul className="readings">{result.measured.map((reading) => <IndicatorRow key={reading.key} reading={reading} />)}</ul>
         </section>
 
         <section className="card">
           <h2>Estimated by the models</h2>
-          <ul>{result.estimated.map((reading) => <IndicatorRow key={reading.key} reading={reading} />)}</ul>
+          <ul className="readings">{result.estimated.map((reading) => <IndicatorRow key={reading.key} reading={reading} />)}</ul>
         </section>
       </div>
     </div>

@@ -114,12 +114,24 @@ def health(request: Request, response: Response) -> dict[str, str]:
 
 @app.post("/api/auth/signup", status_code=status.HTTP_201_CREATED)
 def signup(body: SignUp, request: Request, response: Response) -> dict:
+    auth = request.app.state.auth
     try:
-        user = request.app.state.auth.create_user(body.name, body.email, body.password)
+        user = auth.create_user(body.name, body.email, body.password)
     except EmailTaken as error:
-        raise HTTPException(
-            status.HTTP_409_CONFLICT, "An account with this email already exists."
-        ) from error
+        # Creating an account you already own simply signs you in.
+        try:
+            user = auth.authenticate(body.email, body.password)
+        except TooManyAttempts as locked:
+            raise HTTPException(
+                status.HTTP_429_TOO_MANY_REQUESTS,
+                "Too many failed attempts. Try again in 15 minutes.",
+            ) from locked
+        if user is None:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                "An account with this email already exists. Sign in with its password.",
+            ) from error
+        response.status_code = status.HTTP_200_OK
     return start_session(request, response, user)
 
 

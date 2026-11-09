@@ -64,10 +64,20 @@ def test_password_and_token_are_not_stored_in_plain_text(anon):
     assert USER["password"] not in dump and token not in dump
 
 
-def test_email_is_unique_regardless_of_case(anon):
+def test_creating_your_own_account_again_signs_you_in(anon):
     anon.post("/api/auth/signup", json=USER)
+    anon.post("/api/auth/logout")
     response = anon.post("/api/auth/signup", json={**USER, "email": "ASHA@example.com"})
+    assert response.status_code == 200
+    assert anon.get("/api/auth/me").json()["email"] == USER["email"]
+
+
+def test_email_stays_unique_when_the_password_differs(anon):
+    anon.post("/api/auth/signup", json=USER)
+    anon.post("/api/auth/logout")
+    response = anon.post("/api/auth/signup", json={**USER, "password": "another-password"})
     assert response.status_code == 409
+    assert anon.get("/api/auth/me").status_code == 401
 
 
 @pytest.mark.parametrize(

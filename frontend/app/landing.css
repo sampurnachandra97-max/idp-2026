@@ -1,0 +1,282 @@
+.landing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: max(100svh, 620px);
+  background: #fff;
+  color: #0e0e0e;
+}
+
+.landing-copy {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(40px, 5vw, 56px) clamp(24px, 4vw, 72px) clamp(36px, 4.5vw, 52px) clamp(32px, 3.8vw, 52px);
+}
+
+.landing h1 {
+  font-size: clamp(44px, 5.2vw, 92px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: var(--tracking-statement);
+}
+
+.landing-foot {
+  margin-top: auto;
+  padding-top: 40px;
+}
+
+.landing-lead {
+  max-width: 29em;
+  color: #4b4b4b;
+  font-size: clamp(17px, 1.4vw, 20px);
+  line-height: 1.4;
+  letter-spacing: var(--tracking-caption);
+}
+
+.landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  margin-top: 22px;
+}
+
+.landing-secondary {
+  display: inline-block;
+  padding: 12px 24px;
+  border: 1px solid #cfcfcf;
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-caption);
+  text-decoration: none;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.landing-secondary:hover {
+  border-color: #0e0e0e;
+  background: #f5f5f5;
+}
+
+/* The page itself never scrolls; sizes follow the window height instead. */
+.landing-auth {
+  height: 100svh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.auth-copy {
+  gap: clamp(10px, 3svh, 32px);
+  height: 100svh;
+  padding-block: clamp(14px, 4svh, 48px);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.auth-copy::-webkit-scrollbar {
+  display: none;
+}
+
+.auth-logo {
+  font-size: 22px;
+}
+
+.auth-form {
+  display: grid;
+  gap: clamp(8px, 1.7svh, 16px);
+  width: 100%;
+  max-width: 400px;
+  margin: auto 0;
+}
+
+.auth-form h1 {
+  font-size: clamp(30px, min(3.6vw, 6svh), 52px);
+  line-height: 1.08;
+}
+
+.auth-intro {
+  margin-bottom: clamp(0px, 0.8svh, 8px);
+  color: #4b4b4b;
+  font-size: 17px;
+  line-height: 1.4;
+  letter-spacing: var(--tracking-caption);
+}
+
+.auth-field {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.auth-field input {
+  width: 100%;
+  height: clamp(38px, 5.6svh, 46px);
+  padding: 0 14px;
+  border: 1px solid #d6d6d6;
+  border-radius: 6px;
+  background: #fff;
+  color: #0e0e0e;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.auth-field input:focus-visible {
+  border-color: #0e0e0e;
+  outline: 1px solid #0e0e0e;
+  outline-offset: 0;
+}
+
+.auth-field input[aria-invalid="true"] {
+  border-color: var(--act);
+}
+
+.auth-field em {
+  color: var(--act);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.auth-failure {
+  padding: 11px 14px;
+  border-left: 3px solid var(--act);
+  border-radius: 4px;
+  background: #fdf1ec;
+  color: #8f2f09;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.auth-submit {
+  height: clamp(40px, 5.8svh, 48px);
+  margin-top: 4px;
+  border: 0;
+  border-radius: 999px;
+  background: #0e0e0e;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: var(--tracking-caption);
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.auth-submit:hover {
+  background: #3a3a3a;
+}
+
+.auth-submit:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.auth-switch {
+  color: #4b4b4b;
+  font-size: 15px;
+}
+
+.auth-switch button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #0e0e0e;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.landing-cta {
+  display: inline-block;
+  padding: 13px 26px;
+  border-radius: 999px;
+  background: #0e0e0e;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: var(--tracking-caption);
+  text-decoration: none;
+  transition: background-color 160ms ease;
+}
+
+.landing-cta:hover {
+  background: #3a3a3a;
+}
+
+.landing-logo {
+  margin-bottom: clamp(28px, 6svh, 60px);
+  font-size: 22px;
+}
+
+.field-art {
+  position: relative;
+  min-height: 320px;
+  overflow: hidden;
+  background: #b9c35a;
+}
+
+.field-wash {
+  position: absolute;
+  inset: -12%;
+  filter: blur(30px);
+  background:
+    linear-gradient(112deg, transparent 18%, rgb(255 244 170 / 0.5) 24%, transparent 31%, rgb(120 150 30 / 0.34) 40%, transparent 48%),
+    radial-gradient(34% 20% at 34% 3%, #8fd6f4 0 45%, transparent 100%),
+    radial-gradient(22% 13% at 62% 7%, #f6efdc 0 45%, transparent 100%),
+    radial-gradient(30% 34% at 7% 54%, #e8d816 0 45%, transparent 100%),
+    radial-gradient(30% 30% at 12% 16%, #8fa42c 0 40%, transparent 100%),
+    radial-gradient(30% 22% at 48% 94%, #e4cd2a 0 30%, transparent 100%),
+    radial-gradient(32% 26% at 16% 90%, #9fb53c 0 40%, transparent 100%),
+    radial-gradient(18% 16% at 88% 52%, #c8a64c 0 35%, transparent 100%),
+    radial-gradient(38% 30% at 90% 20%, #ff9db0 0 45%, transparent 100%),
+    radial-gradient(40% 34% at 92% 84%, #ff9fb4 0 45%, transparent 100%),
+    radial-gradient(30% 22% at 74% 42%, #ffc3cd 0 40%, transparent 100%),
+    #b9c35a;
+}
+
+.field-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: 50% 100%;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.field-canvas[data-painted="true"] {
+  opacity: 1;
+}
+
+
+@media (max-width: 820px) {
+  .landing {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(320px, 1fr);
+  }
+
+  .landing-copy {
+    padding: 28px 16px 24px;
+  }
+
+  .landing-foot {
+    padding-top: 20px;
+  }
+
+  .landing-logo {
+    margin-bottom: 22px;
+    font-size: 20px;
+  }
+
+  /* On phones the form takes the whole screen. */
+  .landing-auth {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .landing-auth .field-art {
+    display: none;
+  }
+}

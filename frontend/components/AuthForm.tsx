@@ -6,6 +6,7 @@ import { useState, type FormEvent } from "react";
 export type AuthMode = "signin" | "signup";
 
 const SERVICE_DOWN = "The service is not responding. Please try again in a moment.";
+const RETRY_DELAY_MS = 700;
 
 const COPY = {
   signin: {
@@ -25,6 +26,18 @@ const COPY = {
     switchAction: "Sign in",
   },
 };
+
+/** Tries once more after a brief pause, so a momentary server hiccup goes unnoticed. */
+async function fetchWithRetry(url: string, init: RequestInit): Promise<Response> {
+  try {
+    const first = await fetch(url, init);
+    if (first.status < 500) return first;
+  } catch {
+    // The second attempt below reports the failure if it is still happening.
+  }
+  await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+  return fetch(url, init);
+}
 
 type Field = "name" | "email" | "password";
 type FieldErrors = Partial<Record<Field, string>>;
@@ -64,7 +77,7 @@ export function AuthForm({ initialMode }: { initialMode: AuthMode }) {
 
     setBusy(true);
     try {
-      const response = await fetch(`/api/auth/${mode === "signin" ? "login" : "signup"}`, {
+      const response = await fetchWithRetry(`/api/auth/${mode === "signin" ? "login" : "signup"}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(mode === "signin" ? { email, password } : { name, email, password }),

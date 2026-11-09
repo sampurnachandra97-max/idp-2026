@@ -14,6 +14,10 @@ export function ModelEvidence() {
     const controller = new AbortController();
     fetch("/api/model-card", { signal: controller.signal })
       .then((response) => {
+        if (response.status === 401) {
+          window.location.assign("/login");
+          return null;
+        }
         if (!response.ok) throw new Error(String(response.status));
         return response.json();
       })

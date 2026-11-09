@@ -74,7 +74,17 @@ class AuthStore:
         self._failures: dict[str, list[float]] = defaultdict(list)
         self._lock = threading.Lock()
         with closing(self._connect()) as connection, connection:
+            # Write-ahead logging lets readers and a writer work at the same time.
+            connection.execute("PRAGMA journal_mode = WAL")
             connection.executescript(SCHEMA)
+
+    def is_healthy(self) -> bool:
+        try:
+            with closing(self._connect()) as connection:
+                connection.execute("SELECT 1 FROM users LIMIT 1").fetchone()
+            return True
+        except sqlite3.Error:
+            return False
 
     def _connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(self.path, timeout=10)

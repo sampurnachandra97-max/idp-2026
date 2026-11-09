@@ -30,6 +30,20 @@ describe("AuthForm", () => {
     expect(fetchMock.mock.calls[0][0]).toBe("/api/auth/login");
   });
 
+  it("recovers from a momentary server error", async () => {
+    const fetchMock = vi.fn()
+      .mockImplementationOnce(() => respond({}, 500))
+      .mockImplementationOnce(() => respond({ id: 1 }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AuthForm initialMode="signin" />);
+    type("email", "asha@example.com");
+    type("password", "correct-horse");
+    fireEvent.submit(document.querySelector("form")!);
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/dashboard"), { timeout: 2500 });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("validates before calling the API", () => {
     const fetchMock = vi.fn(() => respond({}));
     vi.stubGlobal("fetch", fetchMock);

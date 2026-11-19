@@ -1,0 +1,208 @@
+\documentclass[12pt,a4paper]{article}
+
+% Packages
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{hyperref}
+\usepackage{fontenc}
+\usepackage{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+% Page style
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textit{Research Methodology}}
+\lhead{\textit{IDP -- Soil Property Analysis}}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Section formatting
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+
+% Spacing
+\onehalfspacing
+
+% Hyperlink colours
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue,
+    citecolor=black
+}
+
+% -------------------------------------------------------
+\begin{document}
+
+% Title Page
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+
+    {\LARGE\bfseries Web-Based System for Soil Property Analysis\\[0.4em]
+    Using Machine Learning Techniques\par}
+
+    \vspace{1.5cm}
+    {\large\itshape Research Methodology\par}
+
+    \vspace{0.5cm}
+    {\normalsize Preliminary Methodology Draft for IDP Mentor Review\par}
+
+    \vspace{2cm}
+    \rule{0.6\textwidth}{0.4pt}
+
+    \vspace{1cm}
+    {\normalsize
+    \textbf{Author:} Sampurna Chandra\\[0.3em]
+    \textbf{GitHub:} \texttt{sampurnachandra97-max}\\[0.3em]
+    \textbf{Repository:} \href{https://github.com/sampurnachandra97-max/idp-2026}%
+        {\texttt{sampurnachandra97-max/idp-2026}}
+    }
+
+    \vspace{1.5cm}
+    {\small\itshape Interdisciplinary Project (IDP) -- 2026\par}
+
+    \vfill
+    {\small \today}
+\end{titlepage}
+
+% -------------------------------------------------------
+\tableofcontents
+\newpage
+
+% -------------------------------------------------------
+\section{Research Approach}
+
+The proposed project is inspired by the research paper \textit{``Estimation of
+Soil Properties Using Machine Learning Techniques to Improve Hydrological
+Modelling in a Semiarid Environment: Campo de Cartagena (Spain).''} The main
+purpose of this project is to explore how machine learning techniques can be
+used to study soil properties and how this information can be presented through
+a web-based system.
+
+The original research focuses on predicting soil organic carbon, clay, silt, and
+sand using machine learning algorithms.  Our project takes this research as a
+reference for developing a user-friendly website that can support the
+understanding and analysis of soil-related information.
+
+% -------------------------------------------------------
+\section{Study of Existing Research}
+
+The initial stage involves studying the existing research paper to understand
+the problem, the datasets used, the machine learning algorithms applied, and the
+results obtained. The paper compares four algorithms for soil-property
+estimation:
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Random Forest (RF)}
+    \item \textbf{Support Vector Machines (SVM)}
+    \item \textbf{XGBoost}
+    \item \textbf{Multilayer Perceptron (MLP)}
+\end{itemize}
+
+The study also explains how predicted soil properties can be used to improve
+hydrological modelling.  This literature study provides the theoretical
+foundation for understanding the problem and planning the proposed system.
+
+% -------------------------------------------------------
+\section{Proposed System Design}
+
+The project involves developing a web-based interface through which soil-related
+information can be presented in an organised and accessible manner.
+
+The system is designed with a focus on:
+\begin{itemize}[noitemsep]
+    \item Simple navigation and clear presentation of information.
+    \item An interface that users can understand without requiring extensive
+          technical knowledge.
+    \item Responsive layout suitable for desktop and mobile screens.
+\end{itemize}
+
+The website forms the main platform for the project.  Its features and
+functionalities are documented according to the final implementation.
+
+% -------------------------------------------------------
+\section{Website Development and Technologies Used}
+
+The website has been developed using \textbf{Next.js}, a React-based framework
+for building web applications.  \textbf{Google Antigravity}, an AI-assisted
+development environment, was used during the development process to support the
+creation and implementation of the website.
+
+The development process involved:
+\begin{enumerate}[noitemsep]
+    \item Building the website interface and organising its components.
+    \item Implementing the required pages and functionalities.
+    \item Ensuring component-based structure for easier maintenance.
+\end{enumerate}
+
+The use of Next.js supports a component-based architecture, making the
+application easier to organise and maintain.
+
+% -------------------------------------------------------
+\section{Machine Learning Approach}
+
+The reference paper provides a foundation for understanding how machine learning
+can be applied to soil-property prediction.  The algorithms considered in the
+literature study include Random Forest, Support Vector Machines, XGBoost, and
+Multilayer Perceptron.
+
+These algorithms are studied to understand their suitability for predicting soil
+properties from environmental data.  The implementation of a machine learning
+prediction module, if included in the final project, will require:
+
+\begin{itemize}[noitemsep]
+    \item A suitable and well-structured dataset.
+    \item Appropriate data preprocessing methods.
+    \item Model training and hyperparameter tuning.
+    \item Independent performance evaluation using standard metrics.
+\end{itemize}
+
+% -------------------------------------------------------
+\section{System Testing and Evaluation}
+
+The website will be evaluated based on its functionality, usability, and ability
+to present information clearly.  Testing will involve:
+
+\begin{itemize}[noitemsep]
+    \item Verifying that all implemented features work correctly.
+    \item Checking that navigation is smooth and intuitive.
+    \item Ensuring the interface behaves properly on different screen sizes.
+\end{itemize}
+
+If a machine learning prediction model is integrated into the system, its
+performance will be evaluated separately using appropriate metrics such as
+\textbf{RMSE} (Root Mean Square Error) and \textbf{R\textsuperscript{2}}
+(Coefficient of Determination).
+
+% -------------------------------------------------------
+\section{Expected Outcome}
+
+The expected outcome of the project is a functional web-based system that
+provides an accessible platform for working with soil-related information.
+
+The project aims to connect the theoretical concepts discussed in the research
+paper with a practical software application.  Future development may include:
+
+\begin{itemize}[noitemsep]
+    \item Integrating trained machine learning models for real-time
+          soil-property estimation.
+    \item Incorporating environmental datasets to support analysis.
+    \item Extending the platform with data visualisation dashboards.
+\end{itemize}
+
+\vspace{1.5cm}
+\hrule
+\vspace{0.5cm}
+{\small\itshape This document is a preliminary draft prepared for IDP mentor
+review and is subject to revision.}
+
+\end{document}

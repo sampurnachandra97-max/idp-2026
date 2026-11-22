@@ -42,6 +42,7 @@ class Engine:
             raise ModelsNotTrained("Model artifacts not found. Run: python -m ml.train")
         bundle = joblib.load(models)
         self.soil_models = bundle["soil"]
+        self.fertility_bundle = bundle.get("fertility")
         self.crop_model = bundle["crop"]["model"]
         self.crop_classes = bundle["crop"]["classes"]
         self.card = json.loads(card.read_text(encoding="utf-8"))
@@ -125,12 +126,26 @@ class Engine:
         )
         return actions
 
+    def _predict_fertility(self, features: pd.DataFrame) -> dict | None:
+        if not self.fertility_bundle:
+            return None
+        model = self.fertility_bundle["model"]
+        labels = self.fertility_bundle.get("labels", {})
+        pred = int(model.predict(features)[0])
+        probas = model.predict_proba(features)[0] if hasattr(model, "predict_proba") else None
+        confidence = float(probas[pred]) if probas is not None else 1.0
+        return {
+            "class": pred,
+            "label": labels.get(pred, str(pred)),
+            "confidence": confidence,
+        }
+
     def analyze(self, sample: dict) -> dict:
         features = pd.DataFrame([{key: sample[key] for key in SOIL_FEATURES}])
         measured = [_reading(INDICATORS[key], float(sample[key])) for key in SOIL_FEATURES]
         estimated = self._estimate(features)
         readings = measured + estimated
-        return {
+        result = {
             "summary": {
                 "in_range": sum(r["level"] == "ok" for r in readings),
                 "needs_action": sum(r["level"] == "act" for r in readings),
@@ -143,3 +158,7 @@ class Engine:
             "actions": self._actions(measured, estimated),
             "warnings": self._coverage_warnings(sample),
         }
+        fertility = self._predict_fertility(features)
+        if fertility is not None:
+            result["fertility"] = fertility
+        return result

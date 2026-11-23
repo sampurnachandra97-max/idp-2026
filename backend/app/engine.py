@@ -56,7 +56,7 @@ class Engine:
             **{k: v for k, v in self.card["crop"]["feature_ranges"].items() if k != "ph"},
         }
         for key, (low, high) in ranges.items():
-            if not low <= sample[key] <= high:
+            if key in sample and not low <= sample[key] <= high:
                 warnings.append(
                     f"{names.get(key, key)} {sample[key]:g} is outside the training range "
                     f"{low:g}–{high:g}, so results that depend on it are less certain."
@@ -84,6 +84,8 @@ class Engine:
         return estimates
 
     def _rank_crops(self, sample: dict) -> list[dict]:
+        if not all(key in sample for key in ("temperature", "humidity", "rainfall")):
+            return []
         frame = pd.DataFrame(
             [
                 {
@@ -133,7 +135,7 @@ class Engine:
         labels = self.fertility_bundle.get("labels", {})
         pred = int(model.predict(features)[0])
         probas = model.predict_proba(features)[0] if hasattr(model, "predict_proba") else None
-        confidence = float(probas[pred]) if probas is not None else 1.0
+        confidence = float(probas[list(model.classes_).index(pred)]) if probas is not None else None
         return {
             "class": pred,
             "label": labels.get(pred, str(pred)),
@@ -142,8 +144,12 @@ class Engine:
 
     def analyze(self, sample: dict) -> dict:
         features = pd.DataFrame([{key: sample[key] for key in SOIL_FEATURES}])
-        measured = [_reading(INDICATORS[key], float(sample[key])) for key in SOIL_FEATURES]
-        estimated = self._estimate(features)
+        measured = [
+            _reading(indicator, float(sample[key]))
+            for key, indicator in INDICATORS.items()
+            if key in sample
+        ]
+        estimated = [reading for reading in self._estimate(features) if reading["key"] not in sample]
         readings = measured + estimated
         result = {
             "summary": {
@@ -168,13 +174,11 @@ class Engine:
             if self.fertility_bundle
             else SOIL_FEATURES
         )
-        fertility_row = {
-            col: float(sample.get(col, nutrients.get(col, 0.0)))
-            for col in fertility_cols
-        }
-        fertility = self._predict_fertility(pd.DataFrame([fertility_row]))
-        if fertility is not None:
-            result["fertility"] = fertility
+        if self.fertility_bundle and all(col in nutrients for col in fertility_cols):
+            fertility_row = {col: nutrients[col] for col in fertility_cols}
+            fertility = self._predict_fertility(pd.DataFrame([fertility_row]))
+            if fertility is not None:
+                result["fertility"] = fertility
         millet_evals = [
             {
                 "name": "Pearl Millet (Bajra)",

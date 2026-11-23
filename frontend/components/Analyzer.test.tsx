@@ -21,6 +21,14 @@ const analysis: Analysis = {
   warnings: [],
 };
 
+function submitSample() {
+  const values = { pH: "6.78", EC: "0.25", N: "179", P: "7.93", K: "256", temperature: "25", humidity: "80", rainfall: "200" };
+  for (const [name, value] of Object.entries(values)) {
+    fireEvent.change(document.querySelector(`input[name="${name}"]`)!, { target: { value } });
+  }
+  fireEvent.click(screen.getByRole("button", { name: "Analyse sample" }));
+}
+
 const respond = (body: unknown, status = 200) =>
   Promise.resolve(new Response(JSON.stringify(body), { status }));
 
@@ -30,20 +38,23 @@ afterEach(() => {
 });
 
 describe("Analyzer", () => {
-  it("analyses the starter sample and shows the findings", async () => {
-    vi.stubGlobal("fetch", vi.fn(() => respond(analysis)));
+  it("waits for a submitted sample and shows the findings", async () => {
+    const fetchMock = vi.fn(() => respond(analysis));
+    vi.stubGlobal("fetch", fetchMock);
     render(<Analyzer />);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect((document.querySelector('input[name="pH"]') as HTMLInputElement).value).toBe("");
+    expect(screen.getByRole("status").textContent).toContain("Enter your soil test");
+    submitSample();
     expect(await screen.findByText("3 of 12 indicators need action.")).toBeTruthy();
     expect(screen.getAllByText("rice").length).toBeGreaterThan(0);
     expect(screen.getByText("Band phosphorus near the root zone.")).toBeTruthy();
   });
 
-  it("does not call the API when a value is invalid", async () => {
+  it("does not call the API when a value is invalid", () => {
     const fetchMock = vi.fn(() => respond(analysis));
     vi.stubGlobal("fetch", fetchMock);
     render(<Analyzer />);
-    await screen.findByText("3 of 12 indicators need action.");
-    fetchMock.mockClear();
 
     fireEvent.change(document.querySelector('input[name="pH"]')!, { target: { value: "99" } });
     fireEvent.submit(document.querySelector("form")!);
@@ -55,6 +66,7 @@ describe("Analyzer", () => {
   it("tells the user when the service is down", async () => {
     vi.stubGlobal("fetch", vi.fn(() => respond({}, 500)));
     render(<Analyzer />);
+    submitSample();
     await waitFor(() => expect(screen.getByRole("alert").textContent).toContain("not responding"));
   });
 });

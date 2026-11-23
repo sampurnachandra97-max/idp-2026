@@ -78,3 +78,22 @@ def test_model_card_documents_grouped_evaluation(client):
     assert {row["target"] for row in card["soil"]["targets"]} == {
         "OC", "S", "Zn", "B", "Fe", "Mn", "Cu",
     }
+
+
+def test_batch_uses_measured_nutrients_and_does_not_invent_weather(client):
+    soil = {key: SAMPLE[key] for key in ("pH", "EC", "N", "P", "K")}
+    response = client.post("/api/analyze-batch", json={"samples": [{**soil, "Fe": 0, "N": 0}]})
+    assert response.status_code == 200
+    result = response.json()["results"][0]
+    measured = {reading["key"]: reading["value"] for reading in result["measured"]}
+    assert measured == {**soil, "Fe": 0, "N": 0}
+    assert all(reading["key"] != "Fe" for reading in result["estimated"])
+    assert result["crops"] == []
+    assert result["crop_suitability"]["millets"]
+
+
+@pytest.mark.parametrize("changes", [{"N": None}, {"P": "missing"}, {"Fe": -1}])
+def test_batch_rejects_invalid_readings(client, changes):
+    response = client.post("/api/analyze-batch", json={"samples": [{**SAMPLE, **changes}]})
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"][:3] == ["body", "samples", 0]

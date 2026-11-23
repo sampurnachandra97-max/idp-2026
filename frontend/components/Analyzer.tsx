@@ -18,16 +18,7 @@ export const PROPERTY_NAMES: Record<string, string> = {
   Cu: "Copper",
 };
 
-const PRESETS: { label: string; values: FormValues }[] = [
-  {
-    label: "Sample 1",
-    values: { pH: "6.78", EC: "0.25", N: "179", P: "7.93", K: "256", temperature: "27", humidity: "72", rainfall: "180" },
-  },
-  {
-    label: "Sample 16",
-    values: { pH: "7.41", EC: "0.11", N: "72", P: "18.07", K: "76", temperature: "24", humidity: "60", rainfall: "90" },
-  },
-];
+const EMPTY_VALUES = Object.fromEntries(FIELDS.map(({ key }) => [key, ""])) as FormValues;
 
 const LEVEL_ICON: Record<Level, LucideIcon> = { ok: CircleCheck, watch: TriangleAlert, act: CircleAlert };
 /* Nutrients have no icon here because their chemical symbol is the exact mark. */
@@ -130,7 +121,9 @@ function Results({ result, busy }: { result: Analysis; busy: boolean }) {
         <p className="notice" key={warning}>{warning}</p>
       ))}
 
-      {result.fertility && <FertilityBanner fertility={result.fertility} />}
+      {result.fertility && (
+        <FertilityBanner fertility={result.fertility} hasEstimates={result.estimated.length > 0} />
+      )}
 
       <div className="panels">
         <CropSuitabilitySection result={result} />
@@ -164,7 +157,7 @@ function Results({ result, busy }: { result: Analysis; busy: boolean }) {
         </section>
 
         <section className="card panel-crops">
-          <h2>Crop suitability</h2>
+          <h2>Model-ranked crops</h2>
           <ol className="crops">
             {crops.map(({ crop, fit }) => (
               <li key={crop}>
@@ -193,7 +186,7 @@ function Results({ result, busy }: { result: Analysis; busy: boolean }) {
 
 export function Analyzer() {
   const [mode, setMode] = useState<"single" | "batch">("single");
-  const [values, setValues] = useState<FormValues>(PRESETS[0].values);
+  const [values, setValues] = useState<FormValues>(EMPTY_VALUES);
   const [errors, setErrors] = useState<FormErrors>({});
   const [result, setResult] = useState<Analysis | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -205,6 +198,7 @@ export function Analyzer() {
     const controller = new AbortController();
     inFlight.current = controller;
     setLoading(true);
+    setResult(null);
     setFailure(null);
     try {
       setResult(await requestAnalysis(next, controller.signal));
@@ -216,21 +210,14 @@ export function Analyzer() {
   }, []);
 
   useEffect(() => {
-    run(PRESETS[0].values);
     return () => inFlight.current?.abort();
-  }, [run]);
+  }, []);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
     const found = validate(values);
     setErrors(found);
     if (Object.keys(found).length === 0) run(values);
-  };
-
-  const loadPreset = (preset: FormValues) => {
-    setValues(preset);
-    setErrors({});
-    run(preset);
   };
 
   const fieldGroup = (group: "soil" | "climate", legend: string) => (
@@ -295,26 +282,15 @@ export function Analyzer() {
             <button className="button" type="submit" disabled={loading}>
               {loading ? "Analysing…" : "Analyse sample"}
             </button>
-            <div className="presets">
-              <span>Real lab data</span>
-              <div className="segment" role="group" aria-label="Load a real lab sample">
-                {PRESETS.map((preset) => (
-                  <button
-                    key={preset.label}
-                    type="button"
-                    aria-pressed={FIELDS.every((field) => preset.values[field.key] === values[field.key])}
-                    onClick={() => loadPreset(preset.values)}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-            </div>
           </form>
 
           <div className="dash-main">
             {failure && <p className="notice" role="alert">{failure}</p>}
-            {result ? <Results result={result} busy={loading} /> : !failure && <p className="empty">Analysing sample…</p>}
+            {result ? <Results result={result} busy={loading} /> : !failure && (
+              <p className="empty" role="status">
+                {loading ? "Analysing sample…" : "Enter your soil test and growing conditions to see an analysis."}
+              </p>
+            )}
           </div>
         </div>
       )}

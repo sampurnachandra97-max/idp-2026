@@ -24,12 +24,22 @@ EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 MIN_PASSWORD_LENGTH = 8
 
 
-class SoilSample(BaseModel):
+class SoilReadings(BaseModel):
     pH: float = Field(ge=0, le=14, description="Soil reaction")
     EC: float = Field(ge=0, le=20, description="Electrical conductivity, dS/m")
     N: float = Field(ge=0, le=1500, description="Available nitrogen, kg/ha")
     P: float = Field(ge=0, le=500, description="Available phosphorus, kg/ha")
     K: float = Field(ge=0, le=2000, description="Available potassium, kg/ha")
+    OC: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+    S: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+    Zn: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+    Fe: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+    Cu: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+    Mn: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+    B: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+
+
+class SoilSample(SoilReadings):
     temperature: float = Field(ge=-10, le=60, description="Mean air temperature, °C")
     humidity: float = Field(ge=0, le=100, description="Mean relative humidity, %")
     rainfall: float = Field(ge=0, le=5000, description="Seasonal rainfall, mm")
@@ -186,19 +196,25 @@ def model_card(request: Request, _: CurrentUser) -> dict:
     return request.app.state.engine.card
 
 
+class BatchSoilSample(SoilReadings):
+    temperature: float | None = Field(default=None, ge=-10, le=60)
+    humidity: float | None = Field(default=None, ge=0, le=100)
+    rainfall: float | None = Field(default=None, ge=0, le=5000)
+
+
 class BatchAnalyzeRequest(BaseModel):
-    samples: list[dict]
+    samples: list[BatchSoilSample] = Field(min_length=1, max_length=1000)
 
 
 @app.post("/api/analyze")
 def analyze(sample: SoilSample, request: Request, _: CurrentUser) -> dict:
-    return request.app.state.engine.analyze(sample.model_dump())
+    return request.app.state.engine.analyze(sample.model_dump(exclude_none=True))
 
 
 @app.post("/api/analyze-batch")
 def analyze_batch(body: BatchAnalyzeRequest, request: Request, _: CurrentUser) -> dict:
     engine = request.app.state.engine
-    results = engine.batch_analyze(body.samples[:1000])
+    results = engine.batch_analyze([sample.model_dump(exclude_none=True) for sample in body.samples])
     return {
         "count": len(results),
         "results": results,
@@ -213,5 +229,5 @@ def dataset_sample(_: CurrentUser) -> dict:
             reader = csv.DictReader(f)
             columns = reader.fieldnames or []
             rows = [row for _, row in zip(range(100), reader)]
-            return {"columns": columns, "rows": rows, "total_samples": 876}
+            return {"columns": columns, "rows": rows, "total_samples": len(rows) + sum(1 for _ in reader)}
     return {"columns": [], "rows": [], "total_samples": 0}

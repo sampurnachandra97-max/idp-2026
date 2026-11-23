@@ -49,7 +49,7 @@ export interface Analysis {
 export interface FertilityResult {
   class: number;
   label: string;
-  confidence: number;
+  confidence: number | null;
 }
 
 export interface CropEvaluation {

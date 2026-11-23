@@ -1,9 +1,10 @@
 "use client";
 
-import { Download, FileSpreadsheet, Loader2, RefreshCw, Search, Upload } from "lucide-react";
+import { Download, Loader2, Search, Upload } from "lucide-react";
 import { useState, type ChangeEvent } from "react";
 import { StatusTag } from "@/components/Analyzer";
-import type { Analysis, Level } from "@/lib/types";
+import { FIELDS } from "@/lib/soil";
+import type { Analysis, FertilityResult } from "@/lib/types";
 
 interface EnrichedRow {
   index: number;
@@ -12,12 +13,9 @@ interface EnrichedRow {
   K: number;
   pH: number;
   EC: number;
-  OC?: number;
-  fertilityLabel: string;
-  fertilityLevel: Level;
-  confidence: number;
-  suitableMillets: string[];
-  suitableVegetables: string[];
+  fertility?: FertilityResult;
+  suitableMillets?: string[];
+  suitableVegetables?: string[];
 }
 
 function parseCSV(text: string): Record<string, string>[] {
@@ -27,18 +25,16 @@ function parseCSV(text: string): Record<string, string>[] {
     .filter((l) => l.length > 0);
   if (lines.length < 2) return [];
 
-  const headers = lines[0].split(",").map((h) => h.trim().replace(/^["']|["']$/g, ""));
-  const rows: Record<string, string>[] = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(",").map((v) => v.trim().replace(/^["']|["']$/g, ""));
-    const row: Record<string, string> = {};
-    headers.forEach((h, idx) => {
-      row[h] = values[idx] ?? "";
-    });
-    rows.push(row);
-  }
-  return rows;
+  const fields = (line: string) =>
+    line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map((value) => value.trim().replace(/^"|"$/g, ""));
+  const headers = fields(lines[0]).map((header) => header.toLowerCase());
+  return lines.slice(1).map((line, index) => {
+    const values = fields(line);
+    if (values.length !== headers.length) {
+      throw new Error(`Sample ${index + 1} has a different number of columns than the header.`);
+    }
+    return Object.fromEntries(headers.map((header, column) => [header, values[column]]));
+  });
 }
 
 export function DatasetUploader() {
@@ -49,98 +45,66 @@ export function DatasetUploader() {
   const [page, setPage] = useState(0);
   const PAGE_SIZE = 10;
 
-  const processRecords = async (records: Record<string, any>[]) => {
+  const processRecords = async (records: Record<string, string>[]) => {
+    if (records.length > 1000) throw new Error("Upload a CSV with at most 1,000 soil records.");
+
+    const keys = [...FIELDS.map(({ key }) => key), "OC", "S", "Zn", "Fe", "Cu", "Mn", "B"];
+    const payloadSamples = records.map((record) =>
+      Object.fromEntries(keys.flatMap((key) => {
+        const value = record[key.toLowerCase()];
+        return value ? [[key, value]] : [];
+      })),
+    );
+
+    const res = await fetch("/api/analyze-batch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ samples: payloadSamples }),
+    });
+
+    if (res.status === 401) {
+      window.location.assign("/login");
+      return;
+    }
+    if (res.status === 422) {
+      const { detail } = await res.json();
+      const issue = detail[0];
+      const [, , row, field] = issue.loc;
+      throw new Error(`Sample ${row + 1}, ${field}: ${issue.msg}.`);
+    }
+    if (!res.ok) throw new Error("Batch analysis is unavailable. Please try again.");
+
+    const data = await res.json();
+    const enriched: EnrichedRow[] = (data.results as Analysis[]).map((result, idx) => ({
+      index: idx + 1,
+      N: Number(payloadSamples[idx].N),
+      P: Number(payloadSamples[idx].P),
+      K: Number(payloadSamples[idx].K),
+      pH: Number(payloadSamples[idx].pH),
+      EC: Number(payloadSamples[idx].EC),
+      fertility: result.fertility,
+      suitableMillets: result.crop_suitability?.millets,
+      suitableVegetables: result.crop_suitability?.vegetables,
+    }));
+
+    setRows(enriched);
+    setPage(0);
+  };
+
+  const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    event.target.value = "";
     setLoading(true);
+    setRows([]);
     setError(null);
     try {
-      const payloadSamples = records.map((r) => ({
-        pH: parseFloat(r["pH"] ?? r["ph"] ?? "7.0") || 7.0,
-        EC: parseFloat(r["EC"] ?? r["ec"] ?? "0.5") || 0.5,
-        N: parseFloat(r["N"] ?? r["n"] ?? "150") || 150,
-        P: parseFloat(r["P"] ?? r["p"] ?? "10") || 10,
-        K: parseFloat(r["K"] ?? r["k"] ?? "150") || 150,
-        temperature: parseFloat(r["temperature"] ?? "25") || 25,
-        humidity: parseFloat(r["humidity"] ?? "70") || 70,
-        rainfall: parseFloat(r["rainfall"] ?? "150") || 150,
-        OC: r["OC"] ? parseFloat(r["OC"]) : undefined,
-        S: r["S"] ? parseFloat(r["S"]) : undefined,
-        Zn: r["Zn"] ? parseFloat(r["Zn"]) : undefined,
-        Fe: r["Fe"] ? parseFloat(r["Fe"]) : undefined,
-        Cu: r["Cu"] ? parseFloat(r["Cu"]) : undefined,
-        Mn: r["Mn"] ? parseFloat(r["Mn"]) : undefined,
-        B: r["B"] ? parseFloat(r["B"]) : undefined,
-      }));
-
-      const res = await fetch("/api/analyze-batch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ samples: payloadSamples }),
-      });
-
-      if (!res.ok) throw new Error("Batch analysis failed. Please verify API status.");
-
-      const data = await res.json();
-      const enriched: EnrichedRow[] = (data.results as Analysis[]).map((result, idx) => {
-        const fert = result.fertility;
-        const fertLevel: Level =
-          fert?.class === 1 || fert?.class === 2 ? "ok" : "watch";
-
-        return {
-          index: idx + 1,
-          N: payloadSamples[idx].N,
-          P: payloadSamples[idx].P,
-          K: payloadSamples[idx].K,
-          pH: payloadSamples[idx].pH,
-          EC: payloadSamples[idx].EC,
-          OC: payloadSamples[idx].OC,
-          fertilityLabel: fert?.label ?? "Evaluated",
-          fertilityLevel: fertLevel,
-          confidence: fert ? Math.round(fert.confidence * 100) : 90,
-          suitableMillets: result.crop_suitability?.millets ?? [],
-          suitableVegetables: result.crop_suitability?.vegetables ?? [],
-        };
-      });
-
-      setRows(enriched);
-      setPage(0);
+      const records = parseCSV(await file.text());
+      if (!records.length) throw new Error("The CSV needs a header and at least one soil record.");
+      await processRecords(records);
     } catch (err) {
       setError((err as Error).message);
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      const records = parseCSV(text);
-      if (records.length === 0) {
-        setError("Could not parse valid soil records from the uploaded file.");
-        return;
-      }
-      processRecords(records);
-    };
-    reader.readAsText(file);
-  };
-
-  const loadSampleDataset = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/dataset-sample");
-      if (!res.ok) throw new Error("Could not load sample dataset.");
-      const data = await res.json();
-      if (data.rows && data.rows.length > 0) {
-        processRecords(data.rows);
-      } else {
-        throw new Error("No sample records available.");
-      }
-    } catch (err) {
-      setError((err as Error).message);
       setLoading(false);
     }
   };
@@ -170,10 +134,10 @@ export function DatasetUploader() {
           r.K,
           r.pH,
           r.EC,
-          `"${r.fertilityLabel}"`,
-          r.confidence,
-          `"${r.suitableMillets.join("; ")}"`,
-          `"${r.suitableVegetables.join("; ")}"`,
+          `"${r.fertility?.label ?? ""}"`,
+          r.fertility?.confidence == null ? "" : Math.round(r.fertility.confidence * 100),
+          `"${r.suitableMillets?.join("; ") ?? ""}"`,
+          `"${r.suitableVegetables?.join("; ") ?? ""}"`,
         ].join(",")
       );
     }
@@ -192,17 +156,17 @@ export function DatasetUploader() {
     if (!search) return true;
     const q = search.toLowerCase();
     return (
-      r.fertilityLabel.toLowerCase().includes(q) ||
-      r.suitableMillets.some((m) => m.toLowerCase().includes(q)) ||
-      r.suitableVegetables.some((v) => v.toLowerCase().includes(q))
+      r.fertility?.label.toLowerCase().includes(q) ||
+      r.suitableMillets?.some((m) => m.toLowerCase().includes(q)) ||
+      r.suitableVegetables?.some((v) => v.toLowerCase().includes(q))
     );
   });
 
   const pageCount = Math.ceil(filtered.length / PAGE_SIZE);
   const displayed = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
-  const fertileCount = rows.filter((r) => r.fertilityLabel.toLowerCase().includes("fertile") && !r.fertilityLabel.toLowerCase().includes("low")).length;
-  const lowCount = rows.filter((r) => r.fertilityLabel.toLowerCase().includes("low")).length;
+  const fertileCount = rows.filter((r) => r.fertility?.class === 1 || r.fertility?.class === 2).length;
+  const lowCount = rows.filter((r) => r.fertility?.class === 0).length;
 
   return (
     <div className="dataset-section card">
@@ -210,23 +174,19 @@ export function DatasetUploader() {
         <div>
           <h2>Soil Dataset Batch Upload & Suitability Analysis</h2>
           <p className="section-subtitle">
-            Upload your soil CSV file (e.g. dataset1.csv) to compute ML fertility tiers and individual crop suitability for each sample.
+            Upload a CSV with pH, EC, N, P and K columns. The models estimate micronutrients and organic carbon when those readings are missing.
           </p>
         </div>
         <div className="dataset-actions">
           <label className="button upload-btn">
             <Upload size={16} />
             <span>Upload CSV</span>
-            <input type="file" accept=".csv" onChange={handleFileUpload} className="sr-only" />
+            <input type="file" accept=".csv" disabled={loading} onChange={handleFileUpload} className="sr-only" />
           </label>
-          <button type="button" className="button button-secondary" onClick={loadSampleDataset} disabled={loading}>
-            {loading ? <Loader2 size={16} className="spin" /> : <RefreshCw size={16} />}
-            <span>Load dataset1.csv</span>
-          </button>
         </div>
       </div>
 
-      {error && <p className="notice">{error}</p>}
+      {error && <p className="notice" role="alert">{error}</p>}
 
       {loading && (
         <div className="upload-loading">
@@ -304,29 +264,32 @@ export function DatasetUploader() {
                     <td className="num">{row.pH}</td>
                     <td className="num">{row.EC}</td>
                     <td>
-                      <StatusTag level={row.fertilityLevel}>
-                        {row.fertilityLabel} ({row.confidence}%)
-                      </StatusTag>
+                      {row.fertility ? (
+                        <StatusTag level={row.fertility.class === 0 ? "watch" : "ok"}>
+                          {row.fertility.label}
+                          {row.fertility.confidence != null && ` (${Math.round(row.fertility.confidence * 100)}%)`}
+                        </StatusTag>
+                      ) : "Unavailable"}
                     </td>
                     <td>
                       <div className="crop-pills">
-                        {row.suitableMillets.length > 0 ? (
+                        {row.suitableMillets?.length ? (
                           row.suitableMillets.map((m) => (
                             <span key={m} className="pill pill-millet">{m.split(" ")[0]}</span>
                           ))
                         ) : (
-                          <span className="empty">None</span>
+                          <span className="empty">{row.suitableMillets ? "None" : "Unavailable"}</span>
                         )}
                       </div>
                     </td>
                     <td>
                       <div className="crop-pills">
-                        {row.suitableVegetables.length > 0 ? (
+                        {row.suitableVegetables?.length ? (
                           row.suitableVegetables.map((v) => (
                             <span key={v} className="pill pill-veg">{v}</span>
                           ))
                         ) : (
-                          <span className="empty">None</span>
+                          <span className="empty">{row.suitableVegetables ? "None" : "Unavailable"}</span>
                         )}
                       </div>
                     </td>

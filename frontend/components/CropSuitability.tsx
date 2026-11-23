@@ -1,6 +1,6 @@
 "use client";
 
-import { Carrot, CircleAlert, CircleCheck, Wheat } from "lucide-react";
+import { Carrot, CircleAlert, CircleCheck, Sparkles, Wheat } from "lucide-react";
 import type { Analysis, CropEvaluation, FertilityResult } from "@/lib/types";
 
 const DEFAULT_MILLETS: CropEvaluation[] = [
@@ -64,28 +64,35 @@ export function FertilityBanner({ fertility }: { fertility?: FertilityResult }) 
   const percentConfidence = Math.round(fertility.confidence * 100);
   const isHigh = fertility.class === 2;
   const isFertile = fertility.class === 1;
-  const levelClass = isHigh || isFertile ? "status-ok" : "status-watch";
+  const tierClass = isHigh ? "tier-high" : isFertile ? "tier-fertile" : "tier-low";
 
   return (
-    <div className="fertility-banner card">
-      <div className="fertility-head">
-        <div>
-          <span className="fertility-caption">Soil Fertility Classification</span>
-          <h2 className="fertility-title">{fertility.label}</h2>
-        </div>
-        <div className="fertility-metrics">
-          <span className={`status-pill ${levelClass}`}>
-            {fertility.label} · {percentConfidence}% confidence
+    <div className={`fertility-banner card ${tierClass}`}>
+      <div className="fertility-top">
+        <div className="fertility-left">
+          <span className="fertility-kicker">
+            <Sparkles size={13} className="kicker-sparkle" />
+            Machine Learning Soil Fertility Analysis
           </span>
+          <h2 className="fertility-main-title">{fertility.label}</h2>
+        </div>
+        <div className="fertility-right">
+          <div className="confidence-chip">
+            <span className="confidence-dot" />
+            <div className="confidence-content">
+              <span className="confidence-val">{percentConfidence}% Confidence</span>
+              <span className="confidence-lbl">Soft Voting Ensemble Model</span>
+            </div>
+          </div>
         </div>
       </div>
-      <p className="fertility-desc">
+      <p className="fertility-narrative">
         {fertility.class === 0 &&
-          "Low fertility tier: Baseline macronutrient reserve (N, P, K) or organic matter is constrained. Supplemental organic fertilization and targeted basal applications are recommended before crop establishment."}
+          "Low fertility classification: Baseline macronutrient reserve (N, P, K) or organic content is below optimal yield thresholds. Prioritize balanced NPK basal application and compost addition prior to sowing demanding crops."}
         {fertility.class === 1 &&
-          "Fertile tier: Well-balanced nutrient status suited for sustainable crop cycles. Standard crop nutrition schedules will yield consistent results across standard staples and coarse cereals."}
+          "Fertile classification: Balanced chemical reaction and macronutrient profile capable of sustaining healthy staple crops and pulses with routine agronomic care."}
         {fertility.class === 2 &&
-          "High fertility tier: High active nutrient availability with strong macronutrient profile. Excellent capacity for intensive vegetable cultivation, pulses, and high-demand commercial varieties."}
+          "High fertility classification: Exceptional nutrient balance and organic matter availability. Well-suited for high-value horticultural crops, intensive vegetable cultivation, and premium commercial yields."}
       </p>
     </div>
   );
@@ -123,35 +130,55 @@ export function CropSuitabilitySection({ result }: { result: Analysis }) {
       {/* Millets Panel */}
       <section className="card panel-suitability">
         <div className="panel-title-row">
-          <div>
-            <h2>Millets Suitability</h2>
-            <p className="section-subtitle">
-              ICAR arid & semi-arid nutrient thresholds ({suitableMilletsCount} of {millets.length} suitable)
-            </p>
+          <div className="panel-title-left">
+            <div className="panel-title-badge millet-badge">
+              <Wheat size={18} strokeWidth={2} />
+            </div>
+            <div>
+              <h2 className="suitability-heading">Millets Suitability</h2>
+              <p className="section-subtitle">
+                ICAR arid & semi-arid nutrient thresholds · {suitableMilletsCount} of {millets.length} suitable
+              </p>
+            </div>
           </div>
-          <span className="badge-count">
-            {suitableMilletsCount}/{millets.length}
-          </span>
+          <div className="suit-badge-wrap">
+            <span className="badge-count count-millet">
+              {suitableMilletsCount}/{millets.length}
+            </span>
+          </div>
+        </div>
+
+        <div className="suitability-progress-track">
+          <div
+            className="suitability-progress-bar bar-millet"
+            style={{ width: `${(suitableMilletsCount / millets.length) * 100}%` }}
+          />
         </div>
 
         <ul className="suitability-list">
           {millets.map((crop) => (
             <li key={crop.name} className={`suitability-item ${crop.suitable ? "is-suitable" : "not-suitable"}`}>
-              <span className="icon-tile" aria-hidden="true">
-                <Wheat size={18} strokeWidth={1.75} />
-              </span>
+              <div className="crop-icon-box millet-icon-box" aria-hidden="true">
+                <Wheat size={19} strokeWidth={1.8} />
+              </div>
               <div className="suitability-info">
-                <strong>{crop.name}</strong>
-                <small title={crop.criteria}>{crop.criteria}</small>
+                <div className="crop-title-row">
+                  <strong className="crop-primary-name">{crop.name}</strong>
+                </div>
+                <div className="criteria-pills">
+                  {crop.criteria.split(", ").map((crit, idx) => (
+                    <span key={idx} className="criteria-tag">{crit}</span>
+                  ))}
+                </div>
               </div>
               <div className="suitability-status">
                 {crop.suitable ? (
                   <span className="suit-tag suit-ok">
-                    <CircleCheck size={14} strokeWidth={2} /> Suitable
+                    <CircleCheck size={15} strokeWidth={2.2} /> Suitable
                   </span>
                 ) : (
                   <span className="suit-tag suit-no">
-                    <CircleAlert size={14} strokeWidth={2} /> Unsuitable
+                    <CircleAlert size={15} strokeWidth={2} /> Unsuitable
                   </span>
                 )}
               </div>
@@ -163,35 +190,55 @@ export function CropSuitabilitySection({ result }: { result: Analysis }) {
       {/* Vegetables Panel */}
       <section className="card panel-suitability">
         <div className="panel-title-row">
-          <div>
-            <h2>Vegetables Suitability</h2>
-            <p className="section-subtitle">
-              Horticultural micronutrient & pH standards ({suitableVegCount} of {vegetables.length} suitable)
-            </p>
+          <div className="panel-title-left">
+            <div className="panel-title-badge veg-badge">
+              <Carrot size={18} strokeWidth={2} />
+            </div>
+            <div>
+              <h2 className="suitability-heading">Vegetables Suitability</h2>
+              <p className="section-subtitle">
+                Horticultural micronutrient & pH standards · {suitableVegCount} of {vegetables.length} suitable
+              </p>
+            </div>
           </div>
-          <span className="badge-count">
-            {suitableVegCount}/{vegetables.length}
-          </span>
+          <div className="suit-badge-wrap">
+            <span className="badge-count count-veg">
+              {suitableVegCount}/{vegetables.length}
+            </span>
+          </div>
+        </div>
+
+        <div className="suitability-progress-track">
+          <div
+            className="suitability-progress-bar bar-veg"
+            style={{ width: `${(suitableVegCount / vegetables.length) * 100}%` }}
+          />
         </div>
 
         <ul className="suitability-list">
           {vegetables.map((crop) => (
             <li key={crop.name} className={`suitability-item ${crop.suitable ? "is-suitable" : "not-suitable"}`}>
-              <span className="icon-tile" aria-hidden="true">
-                <Carrot size={18} strokeWidth={1.75} />
-              </span>
+              <div className="crop-icon-box veg-icon-box" aria-hidden="true">
+                <Carrot size={19} strokeWidth={1.8} />
+              </div>
               <div className="suitability-info">
-                <strong>{crop.name}</strong>
-                <small title={crop.criteria}>{crop.criteria}</small>
+                <div className="crop-title-row">
+                  <strong className="crop-primary-name">{crop.name}</strong>
+                </div>
+                <div className="criteria-pills">
+                  {crop.criteria.split(", ").map((crit, idx) => (
+                    <span key={idx} className="criteria-tag">{crit}</span>
+                  ))}
+                </div>
               </div>
               <div className="suitability-status">
                 {crop.suitable ? (
                   <span className="suit-tag suit-ok">
-                    <CircleCheck size={14} strokeWidth={2} /> Suitable
+                    <CircleCheck size={15} strokeWidth={2.2} /> Suitable
                   </span>
                 ) : (
                   <span className="suit-tag suit-no">
-                    <CircleAlert size={14} strokeWidth={2} /> Unsuitable
+                    <CircleAlert size={15} strokeWidth={2} /> Unsuitable
                   </span>
                 )}
               </div>

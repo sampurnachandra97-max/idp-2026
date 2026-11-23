@@ -730,7 +730,6 @@ td.num {
   padding: 22px 24px;
   background: var(--fertility-tint);
   border: 1px solid var(--line);
-  border-left: 4px solid var(--fertility-accent);
   border-radius: 12px;
 }
 

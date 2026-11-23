@@ -26,7 +26,12 @@ import numpy as np
 import pandas as pd
 from sklearn.base import clone
 from sklearn.dummy import DummyRegressor
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.ensemble import (
+    ExtraTreesClassifier,
+    RandomForestClassifier,
+    RandomForestRegressor,
+    VotingClassifier,
+)
 from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.metrics import (
     accuracy_score,
@@ -58,6 +63,7 @@ SEED = 42
 
 SOIL_FEATURES = ["pH", "EC", "N", "P", "K"]
 SOIL_TARGETS = ["OC", "S", "Zn", "B", "Fe", "Mn", "Cu"]
+FERTILITY_FEATURES = ["N", "P", "K", "pH", "EC", "OC", "S", "Zn", "Fe", "Cu", "Mn", "B"]
 CROP_FEATURES = ["temperature", "humidity", "ph", "rainfall"]
 FERTILITY_LABELS = {0: "Low Fertility", 1: "Fertile", 2: "High Fertility"}
 
@@ -105,20 +111,29 @@ def classifiers() -> dict[str, object]:
 
 
 def fertility_classifiers() -> dict[str, object]:
+    rf = RandomForestClassifier(
+        n_estimators=500, max_depth=12, min_samples_split=3, random_state=SEED, n_jobs=-1
+    )
+    et = ExtraTreesClassifier(
+        n_estimators=500, max_depth=14, min_samples_split=2, random_state=SEED, n_jobs=-1
+    )
+    xgb = XGBClassifier(
+        n_estimators=350,
+        learning_rate=0.04,
+        max_depth=5,
+        subsample=0.85,
+        colsample_bytree=0.85,
+        random_state=SEED,
+        n_jobs=-1,
+    )
     return {
-        "Logistic regression": make_pipeline(
-            StandardScaler(), LogisticRegression(max_iter=2000)
-        ),
-        "Random Forest": RandomForestClassifier(
-            n_estimators=300, random_state=SEED, class_weight="balanced", n_jobs=-1
-        ),
-        "XGBoost": XGBClassifier(
-            n_estimators=200,
-            learning_rate=0.08,
-            max_depth=4,
-            subsample=0.9,
-            random_state=SEED,
-            n_jobs=-1,
+        "Random Forest": rf,
+        "Extra Trees": et,
+        "XGBoost": xgb,
+        "Soft Voting Ensemble": VotingClassifier(
+            estimators=[("rf", rf), ("et", et), ("xgb", xgb)],
+            voting="soft",
+            weights=[1.2, 1.2, 1.0],
         ),
     }
 
@@ -228,8 +243,8 @@ def train_soil_models(frame: pd.DataFrame) -> tuple[dict, dict]:
 
 
 def train_fertility_model(frame: pd.DataFrame) -> tuple[dict, dict]:
-    """Train and evaluate the Soil Fertility Classifier on the preprocessed dataset."""
-    features = frame[SOIL_FEATURES]
+    """Train and evaluate the Soil Fertility Classifier on the preprocessed dataset with maximum accuracy."""
+    features = frame[FERTILITY_FEATURES]
     labels = frame["Output"].astype(int)
 
     x_train, x_test, y_train, y_test = train_test_split(
@@ -239,14 +254,14 @@ def train_fertility_model(frame: pd.DataFrame) -> tuple[dict, dict]:
 
     candidates = {}
     for name, model in fertility_classifiers().items():
-        oof = cross_val_predict(model, x_train, y_train, cv=folds)
+        oof = cross_val_predict(clone(model), x_train, y_train, cv=folds)
         candidates[name] = {
             "accuracy": float(accuracy_score(y_train, oof)),
             "macro_f1": float(f1_score(y_train, oof, average="macro")),
             "weighted_f1": float(f1_score(y_train, oof, average="weighted")),
         }
 
-    best = max(candidates, key=lambda name: candidates[name]["weighted_f1"])
+    best = max(candidates, key=lambda name: candidates[name]["accuracy"])
     evaluated = clone(fertility_classifiers()[best]).fit(x_train, y_train)
     predicted = evaluated.predict(x_test)
 
@@ -254,7 +269,7 @@ def train_fertility_model(frame: pd.DataFrame) -> tuple[dict, dict]:
         "samples": len(frame),
         "classes": [0, 1, 2],
         "class_labels": FERTILITY_LABELS,
-        "features": SOIL_FEATURES,
+        "features": FERTILITY_FEATURES,
         "selected_model": best,
         "test": {
             "accuracy": float(accuracy_score(y_test, predicted)),
@@ -264,7 +279,7 @@ def train_fertility_model(frame: pd.DataFrame) -> tuple[dict, dict]:
         "cv_by_model": candidates,
         "feature_ranges": {
             column: [float(frame[column].min()), float(frame[column].max())]
-            for column in SOIL_FEATURES
+            for column in FERTILITY_FEATURES
         },
     }
 
@@ -273,6 +288,7 @@ def train_fertility_model(frame: pd.DataFrame) -> tuple[dict, dict]:
         "model": final,
         "classes": [0, 1, 2],
         "labels": FERTILITY_LABELS,
+        "features": FERTILITY_FEATURES,
     }
     return bundle, summary
 

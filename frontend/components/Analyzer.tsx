@@ -1,8 +1,10 @@
 "use client";
 
-import { CircleAlert, CircleCheck, FlaskConical, Leaf, TriangleAlert, Zap, type LucideIcon } from "lucide-react";
+import { CircleAlert, CircleCheck, FileSpreadsheet, FlaskConical, Leaf, TriangleAlert, Zap, type LucideIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { CropIcon } from "@/components/CropIcon";
+import { CropSuitabilitySection, FertilityBanner } from "@/components/CropSuitability";
+import { DatasetUploader } from "@/components/DatasetUploader";
 import { FIELDS, formatValue, toPayload, validate, type FormErrors, type FormValues } from "@/lib/soil";
 import type { Analysis, Estimate, Level, Reading } from "@/lib/types";
 
@@ -128,7 +130,11 @@ function Results({ result, busy }: { result: Analysis; busy: boolean }) {
         <p className="notice" key={warning}>{warning}</p>
       ))}
 
+      {result.fertility && <FertilityBanner fertility={result.fertility} />}
+
       <div className="panels">
+        <CropSuitabilitySection result={result} />
+
         <section className="card panel-actions">
           <h2>What to do first</h2>
           {result.actions.length === 0 ? (
@@ -186,6 +192,7 @@ function Results({ result, busy }: { result: Analysis; busy: boolean }) {
 }
 
 export function Analyzer() {
+  const [mode, setMode] = useState<"single" | "batch">("single");
   const [values, setValues] = useState<FormValues>(PRESETS[0].values);
   const [errors, setErrors] = useState<FormErrors>({});
   const [result, setResult] = useState<Analysis | null>(null);
@@ -255,35 +262,62 @@ export function Analyzer() {
   );
 
   return (
-    <div className="dash-grid">
-      <form className="card sample-form" onSubmit={submit} noValidate>
-        <h2>Soil sample</h2>
-        {fieldGroup("soil", "Routine soil test")}
-        {fieldGroup("climate", "Growing conditions")}
-        <button className="button" type="submit" disabled={loading}>
-          {loading ? "Analysing…" : "Analyse sample"}
+    <div>
+      <div className="mode-tabs" role="tablist" aria-label="Analysis mode">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === "single"}
+          className="mode-tab"
+          onClick={() => setMode("single")}
+        >
+          <FlaskConical size={16} /> Routine Soil Test
         </button>
-        <div className="presets">
-          <span>Real lab data</span>
-          <div className="segment" role="group" aria-label="Load a real lab sample">
-            {PRESETS.map((preset) => (
-              <button
-                key={preset.label}
-                type="button"
-                aria-pressed={FIELDS.every((field) => preset.values[field.key] === values[field.key])}
-                onClick={() => loadPreset(preset.values)}
-              >
-                {preset.label}
-              </button>
-            ))}
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === "batch"}
+          className="mode-tab"
+          onClick={() => setMode("batch")}
+        >
+          <FileSpreadsheet size={16} /> Upload & Analyze Dataset (CSV)
+        </button>
+      </div>
+
+      {mode === "batch" ? (
+        <DatasetUploader />
+      ) : (
+        <div className="dash-grid">
+          <form className="card sample-form" onSubmit={submit} noValidate>
+            <h2>Soil sample</h2>
+            {fieldGroup("soil", "Routine soil test")}
+            {fieldGroup("climate", "Growing conditions")}
+            <button className="button" type="submit" disabled={loading}>
+              {loading ? "Analysing…" : "Analyse sample"}
+            </button>
+            <div className="presets">
+              <span>Real lab data</span>
+              <div className="segment" role="group" aria-label="Load a real lab sample">
+                {PRESETS.map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    aria-pressed={FIELDS.every((field) => preset.values[field.key] === values[field.key])}
+                    onClick={() => loadPreset(preset.values)}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </form>
+
+          <div className="dash-main">
+            {failure && <p className="notice" role="alert">{failure}</p>}
+            {result ? <Results result={result} busy={loading} /> : !failure && <p className="empty">Analysing sample…</p>}
           </div>
         </div>
-      </form>
-
-      <div className="dash-main">
-        {failure && <p className="notice" role="alert">{failure}</p>}
-        {result ? <Results result={result} busy={loading} /> : !failure && <p className="empty">Analysing sample…</p>}
-      </div>
+      )}
     </div>
   );
 }

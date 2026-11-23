@@ -18,12 +18,12 @@ Set up Soil Intelligence, train it on your own soil data, and connect it to your
 
 ## Overview
 
-Soil Intelligence takes five readings from a routine soil test, plus local climate, and returns estimates for seven further soil properties, stress findings, prioritised actions and ranked crops.
+Soil Intelligence takes five readings from a routine soil test, plus local climate, and returns estimates for seven further soil properties, machine learning soil fertility tier classification, individual millet and vegetable suitability evaluations, stress findings, prioritised actions and ranked crops.
 
 It has two parts:
 
-- A **Python API** that trains and serves the models.
-- A **Next.js web app** that provides the landing page and dashboard.
+- A **Python API** that trains and serves the models (Property Regressors, Fertility Classifier, Crop Suitability Classifier, Batch Dataset Analysis).
+- A **Next.js web app** that provides the landing page, single sample analyzer, and batch CSV dataset upload interface.
 
 ## Quick start
 
@@ -104,11 +104,17 @@ Open <http://localhost:3000> and sign in with any email and a password of at lea
 
 | Path | Contains |
 | --- | --- |
-| `backend/ml/train.py` | Data preparation, model comparison and evaluation |
-| `backend/app/engine.py` | Turns a sample into estimates, findings and crops |
+| `backend/ml/preprocess.py` | Data cleaning, outlier treatment, and millet/vegetable suitability logic |
+| `backend/ml/train.py` | Multi-model training orchestrator: Regressors, Fertility Classifier, Crop Classifier |
+| `backend/app/engine.py` | Single and batch analysis engine, fertility prediction, and suitability logic |
 | `backend/app/rules.py` | Agronomic thresholds and recommended actions |
-| `backend/app/auth.py` | Accounts and sessions |
+| `backend/app/auth.py` | Secure accounts and session handling |
 | `frontend/app` | Landing page, sign-in and dashboard routes |
+| `frontend/components/Analyzer.tsx` | Interactive single-sample and batch dataset analyzer |
+| `frontend/components/DatasetUploader.tsx` | Drag-and-drop CSV dataset upload, filtering, and export |
+| `frontend/components/CropSuitability.tsx` | Millets & Vegetables individual evaluation cards |
+| `docs/reports/` | LaTeX and PDF research methodology report |
+| `docs/datasets/` | Raw and preprocessed soil fertility datasets |
 
 ## Train on your own data
 

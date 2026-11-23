@@ -158,31 +158,90 @@ class Engine:
             "actions": self._actions(measured, estimated),
             "warnings": self._coverage_warnings(sample),
         }
-        fertility = self._predict_fertility(features)
-        if fertility is not None:
-            result["fertility"] = fertility
 
         # Evaluate millet and vegetable suitability
         nutrients = {r["key"]: r["value"] for r in readings}
+
+        # Predict soil fertility tier with maximum accuracy
+        fertility_cols = (
+            self.fertility_bundle.get("features", SOIL_FEATURES)
+            if self.fertility_bundle
+            else SOIL_FEATURES
+        )
+        fertility_row = {
+            col: float(sample.get(col, nutrients.get(col, 0.0)))
+            for col in fertility_cols
+        }
+        fertility = self._predict_fertility(pd.DataFrame([fertility_row]))
+        if fertility is not None:
+            result["fertility"] = fertility
+        millet_evals = [
+            {
+                "name": "Pearl Millet (Bajra)",
+                "suitable": bool((6.5 <= nutrients["pH"] <= 8.5) and (nutrients["EC"] <= 1.5) and (nutrients["N"] >= 100) and (nutrients["P"] >= 5.0) and (nutrients["K"] >= 100)),
+                "criteria": "pH 6.5–8.5, EC ≤ 1.5 dS/m, N ≥ 100, P ≥ 5.0, K ≥ 100 kg/ha",
+            },
+            {
+                "name": "Sorghum (Jowar)",
+                "suitable": bool((6.5 <= nutrients["pH"] <= 8.6) and (nutrients["EC"] <= 1.5) and (nutrients["N"] >= 150) and (nutrients["P"] >= 7.0) and (nutrients["K"] >= 120)),
+                "criteria": "pH 6.5–8.6, EC ≤ 1.5 dS/m, N ≥ 150, P ≥ 7.0, K ≥ 120 kg/ha",
+            },
+            {
+                "name": "Finger Millet (Ragi)",
+                "suitable": bool((6.0 <= nutrients["pH"] <= 7.8) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 120) and (nutrients["P"] >= 6.5) and (nutrients["K"] >= 100)),
+                "criteria": "pH 6.0–7.8, EC ≤ 1.0 dS/m, N ≥ 120, P ≥ 6.5, K ≥ 100 kg/ha",
+            },
+            {
+                "name": "Foxtail Millet (Kangni)",
+                "suitable": bool((6.2 <= nutrients["pH"] <= 8.2) and (nutrients["EC"] <= 1.2) and (nutrients["N"] >= 80) and (nutrients["K"] >= 80)),
+                "criteria": "pH 6.2–8.2, EC ≤ 1.2 dS/m, N ≥ 80, K ≥ 80 kg/ha",
+            },
+            {
+                "name": "Barnyard Millet (Sanwa)",
+                "suitable": bool((6.0 <= nutrients["pH"] <= 8.5) and (nutrients["EC"] <= 1.2) and (nutrients["K"] >= 60)),
+                "criteria": "pH 6.0–8.5, EC ≤ 1.2 dS/m, K ≥ 60 kg/ha",
+            },
+        ]
+        vegetable_evals = [
+            {
+                "name": "Tomato",
+                "suitable": bool((6.5 <= nutrients["pH"] <= 7.8) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 180) and (nutrients["P"] >= 7.5) and (nutrients["K"] >= 180) and (nutrients["OC"] >= 0.35)),
+                "criteria": "pH 6.5–7.8, EC ≤ 1.0 dS/m, N ≥ 180, P ≥ 7.5, K ≥ 180, OC ≥ 0.35%",
+            },
+            {
+                "name": "Onion",
+                "suitable": bool((6.5 <= nutrients["pH"] <= 7.8) and (nutrients["EC"] <= 0.8) and (nutrients["N"] >= 160) and (nutrients["P"] >= 7.0) and (nutrients["K"] >= 150) and (nutrients["S"] >= 5.0)),
+                "criteria": "pH 6.5–7.8, EC ≤ 0.8 dS/m, N ≥ 160, P ≥ 7.0, K ≥ 150, S ≥ 5.0 mg/kg",
+            },
+            {
+                "name": "Brinjal",
+                "suitable": bool((6.5 <= nutrients["pH"] <= 8.0) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 170) and (nutrients["P"] >= 6.5) and (nutrients["K"] >= 140)),
+                "criteria": "pH 6.5–8.0, EC ≤ 1.0 dS/m, N ≥ 170, P ≥ 6.5, K ≥ 140 kg/ha",
+            },
+            {
+                "name": "Okra",
+                "suitable": bool((6.5 <= nutrients["pH"] <= 8.2) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 150) and (nutrients["P"] >= 6.0) and (nutrients["K"] >= 120)),
+                "criteria": "pH 6.5–8.2, EC ≤ 1.0 dS/m, N ≥ 150, P ≥ 6.0, K ≥ 120 kg/ha",
+            },
+            {
+                "name": "Spinach",
+                "suitable": bool((6.5 <= nutrients["pH"] <= 7.8) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 220) and (nutrients["Fe"] >= 2.0)),
+                "criteria": "pH 6.5–7.8, EC ≤ 1.0 dS/m, N ≥ 220 kg/ha, Fe ≥ 2.0 mg/kg",
+            },
+            {
+                "name": "Cabbage",
+                "suitable": bool((6.5 <= nutrients["pH"] <= 7.8) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 200) and (nutrients["P"] >= 7.5) and (nutrients["K"] >= 180) and (nutrients["B"] >= 0.25)),
+                "criteria": "pH 6.5–7.8, EC ≤ 1.0 dS/m, N ≥ 200, P ≥ 7.5, K ≥ 180, B ≥ 0.25 mg/kg",
+            },
+        ]
         result["crop_suitability"] = {
-            "millets": [
-                crop for crop, suitable in [
-                    ("Pearl Millet (Bajra)", (6.5 <= nutrients["pH"] <= 8.5) and (nutrients["EC"] <= 1.5) and (nutrients["N"] >= 100) and (nutrients["P"] >= 5.0) and (nutrients["K"] >= 100)),
-                    ("Sorghum (Jowar)", (6.5 <= nutrients["pH"] <= 8.6) and (nutrients["EC"] <= 1.5) and (nutrients["N"] >= 150) and (nutrients["P"] >= 7.0) and (nutrients["K"] >= 120)),
-                    ("Finger Millet (Ragi)", (6.0 <= nutrients["pH"] <= 7.8) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 120) and (nutrients["P"] >= 6.5) and (nutrients["K"] >= 100)),
-                    ("Foxtail Millet (Kangni)", (6.2 <= nutrients["pH"] <= 8.2) and (nutrients["EC"] <= 1.2) and (nutrients["N"] >= 80) and (nutrients["K"] >= 80)),
-                    ("Barnyard Millet (Sanwa)", (6.0 <= nutrients["pH"] <= 8.5) and (nutrients["EC"] <= 1.2) and (nutrients["K"] >= 60)),
-                ] if suitable
-            ],
-            "vegetables": [
-                crop for crop, suitable in [
-                    ("Tomato", (6.5 <= nutrients["pH"] <= 7.8) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 180) and (nutrients["P"] >= 7.5) and (nutrients["K"] >= 180) and (nutrients["OC"] >= 0.35)),
-                    ("Onion", (6.5 <= nutrients["pH"] <= 7.8) and (nutrients["EC"] <= 0.8) and (nutrients["N"] >= 160) and (nutrients["P"] >= 7.0) and (nutrients["K"] >= 150) and (nutrients["S"] >= 5.0)),
-                    ("Brinjal", (6.5 <= nutrients["pH"] <= 8.0) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 170) and (nutrients["P"] >= 6.5) and (nutrients["K"] >= 140)),
-                    ("Okra", (6.5 <= nutrients["pH"] <= 8.2) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 150) and (nutrients["P"] >= 6.0) and (nutrients["K"] >= 120)),
-                    ("Spinach", (6.5 <= nutrients["pH"] <= 7.8) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 220) and (nutrients["Fe"] >= 2.0)),
-                    ("Cabbage", (6.5 <= nutrients["pH"] <= 7.8) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 200) and (nutrients["P"] >= 7.5) and (nutrients["K"] >= 180) and (nutrients["B"] >= 0.25)),
-                ] if suitable
-            ],
+            "millets": [c["name"] for c in millet_evals if c["suitable"]],
+            "vegetables": [c["name"] for c in vegetable_evals if c["suitable"]],
+            "detailed_millets": millet_evals,
+            "detailed_vegetables": vegetable_evals,
         }
         return result
+
+    def batch_analyze(self, samples: list[dict]) -> list[dict]:
+        """Process multiple soil samples in batch for dataset upload & bulk analysis."""
+        return [self.analyze(sample) for sample in samples]

@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import csv
 import logging
 import os
 import re
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import Cookie, Depends, FastAPI, HTTPException, Request, Response, status
@@ -184,6 +186,32 @@ def model_card(request: Request, _: CurrentUser) -> dict:
     return request.app.state.engine.card
 
 
+class BatchAnalyzeRequest(BaseModel):
+    samples: list[dict]
+
+
 @app.post("/api/analyze")
 def analyze(sample: SoilSample, request: Request, _: CurrentUser) -> dict:
     return request.app.state.engine.analyze(sample.model_dump())
+
+
+@app.post("/api/analyze-batch")
+def analyze_batch(body: BatchAnalyzeRequest, request: Request, _: CurrentUser) -> dict:
+    engine = request.app.state.engine
+    results = engine.batch_analyze(body.samples[:1000])
+    return {
+        "count": len(results),
+        "results": results,
+    }
+
+
+@app.get("/api/dataset-sample")
+def dataset_sample(_: CurrentUser) -> dict:
+    csv_file = Path(__file__).resolve().parents[1] / "data" / "clean" / "soil_fertility_with_crop_suitability.csv"
+    if csv_file.exists():
+        with csv_file.open(encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            columns = reader.fieldnames or []
+            rows = [row for _, row in zip(range(100), reader)]
+            return {"columns": columns, "rows": rows, "total_samples": 876}
+    return {"columns": [], "rows": [], "total_samples": 0}

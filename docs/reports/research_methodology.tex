@@ -1,0 +1,251 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage[hidelinks]{hyperref}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{xcolor}
+
+% ── Page style ─────────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textit{Research Methodology}}
+\lhead{\textit{Soil Property Analysis Using ML}}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Typography ──────────────────────────────────────────────────────────────
+\onehalfspacing
+\titleformat{\section}{\large\bfseries\color{black}}{}{0em}{}[\vspace{-4pt}\rule{\linewidth}{0.6pt}]
+\setlist[itemize]{noitemsep, topsep=4pt, leftmargin=1.4em}
+\setlist[enumerate]{noitemsep, topsep=4pt, leftmargin=1.4em}
+
+% ── Document ────────────────────────────────────────────────────────────────
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \vspace*{2.5cm}
+
+  {\LARGE\bfseries
+    Web-Based System for Soil Property Analysis\\[0.5em]
+    Using Machine Learning Techniques\par}
+
+  \vspace{1.2cm}
+  {\large\itshape Research Methodology\par}
+
+  \vspace{0.4cm}
+  {\normalsize Interdisciplinary Project --- 2026\par}
+
+  \vspace{1.8cm}
+  \rule{0.55\textwidth}{1pt}
+  \vspace{1.4cm}
+
+  {\large
+    Sampurna Chandra\\[0.3em]
+    Gourab Ghosh\\[0.3em]
+    Rashi Koiri\\[0.3em]
+    Sayani Ghosh\\[0.3em]
+    Sibani Mallick\\[0.3em]
+    Mir Jeniya\\[0.3em]
+    Aishini Mukherjee\\[0.3em]
+    Rohit Das\\[0.3em]
+    Indrani Biswas\par}
+
+  \vfill
+  {\small \today}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ───────────────────────────────────────────────────────────────────────────
+\section{3.1\quad Research Approach}
+
+This project is grounded in the peer-reviewed study \textit{``Estimation of
+Soil Properties Using Machine Learning Techniques to Improve Hydrological
+Modelling in a Semiarid Environment: Campo de Cartagena (Spain).''} The
+central objective is to investigate how supervised machine learning techniques
+can be applied to estimate key soil properties, and to make those capabilities
+accessible through a well-structured, web-based platform.
+
+The reference study focuses on predicting soil organic carbon, clay, silt, and
+sand content using environmental and sensor data.  This project extends that
+foundation by building a full-stack application that integrates machine
+learning inference with an accessible user interface, enabling stakeholders to
+query soil-property estimates without specialist knowledge.
+
+% ───────────────────────────────────────────────────────────────────────────
+\section{3.2\quad Study of Existing Research}
+
+The initial phase entailed a systematic study of the reference paper to
+understand the problem domain, the nature of the input datasets, the machine
+learning algorithms benchmarked, and the evaluation methodology adopted.  The
+paper compares four model families for soil-property regression:
+
+\begin{itemize}
+  \item \textbf{Random Forest (RF)} --- an ensemble of decision trees with
+        variance reduction through bagging.
+  \item \textbf{Support Vector Machines (SVM)} --- a margin-maximising kernel
+        method suited to small, high-dimensional datasets.
+  \item \textbf{XGBoost} --- a gradient-boosted tree framework optimised for
+        speed and predictive accuracy.
+  \item \textbf{Multilayer Perceptron (MLP)} --- a fully connected neural
+        network capturing non-linear feature interactions.
+\end{itemize}
+
+The study further demonstrates how accurately predicted soil properties feed
+into hydrological models, closing the loop between soil science and
+environmental management.  This literature review forms the theoretical basis
+on which the system architecture and algorithm selection are built.
+
+% ───────────────────────────────────────────────────────────────────────────
+\section{3.3\quad Proposed System Design}
+
+The system is designed as a decoupled, two-tier architecture comprising a
+machine learning inference backend and a reactive frontend application.  The
+design principles that guided every architectural decision are:
+
+\begin{itemize}
+  \item Separation of concerns between data processing, model inference, and
+        presentation layers.
+  \item Stateless REST API endpoints to allow independent scaling of the
+        backend.
+  \item Component-based frontend structure for reusability and ease of
+        maintenance.
+  \item Responsive layout that functions correctly across desktop and mobile
+        viewports.
+\end{itemize}
+
+Input features accepted by the system include soil pH, electrical conductivity
+(EC), and macro-nutrient concentrations (N, P, K), which are obtainable from a
+standard field-testing kit.  The system returns estimated values for organic
+carbon (OC), sulphur (S), and micronutrients (Zn, B, Fe, Mn, Cu), together
+with a crop suitability ranking derived from climate and pH data.
+
+% ───────────────────────────────────────────────────────────────────────────
+\section{3.4\quad Development Stack and Technologies}
+
+The project is implemented across two principal layers, each with its own
+technology stack chosen to match the demands of that layer.
+
+\subsection*{Frontend}
+\begin{itemize}
+  \item \textbf{Next.js 16} (React 19, TypeScript) --- server-side rendering
+        and file-based routing.
+  \item \textbf{Tailwind CSS} --- utility-first styling with responsive
+        breakpoints.
+  \item \textbf{Lucide React} --- accessible SVG icon set.
+  \item \textbf{Vitest} and \textbf{React Testing Library} --- unit and
+        component testing.
+\end{itemize}
+
+\subsection*{Backend}
+\begin{itemize}
+  \item \textbf{Python 3.12} --- primary implementation language for the
+        backend and ML pipeline.
+  \item \textbf{FastAPI} with \textbf{Uvicorn} --- high-performance ASGI
+        framework for REST endpoints.
+  \item \textbf{scikit-learn 1.6} --- preprocessing pipelines, Random Forest,
+        Ridge regression, and cross-validation utilities.
+  \item \textbf{XGBoost 2.1} --- gradient-boosted regressors and classifiers
+        for soil and crop models.
+  \item \textbf{pandas 2.2} and \textbf{NumPy 2.1} --- data loading, feature
+        engineering, and numerical computation.
+  \item \textbf{joblib} --- model serialisation and parallel computation.
+  \item \textbf{pytest} and \textbf{httpx} --- API and integration testing.
+\end{itemize}
+
+% ───────────────────────────────────────────────────────────────────────────
+\section{3.5\quad Machine Learning Methodology}
+
+Two families of models are trained and evaluated independently to address
+distinct prediction tasks within the platform.
+
+\subsection*{Soil Property Regressors}
+
+Models are trained on the AgriNet laboratory dataset to estimate secondary soil
+parameters (OC, S, Zn, B, Fe, Mn, Cu) from a routine five-feature input
+vector (pH, EC, N, P, K).  Because the dataset contains runs of near-identical
+consecutive readings from repeated field measurements, a group-aware splitting
+strategy (\texttt{GroupShuffleSplit} and \texttt{GroupKFold}) is used to
+prevent data leakage between training and validation sets.  Both Random Forest
+and XGBoost regressors are benchmarked against a \texttt{DummyRegressor}
+baseline.
+
+\subsection*{Crop Suitability Classifier}
+
+A multi-class crop-recommendation model is trained on the Crop Recommendation
+benchmark dataset using temperature, humidity, rainfall, and pH as input
+features.  N, P and K columns from this dataset are excluded because they
+represent unitless ratio values incompatible with the lab-measured
+concentrations in AgriNet.  Random Forest and XGBoost classifiers are
+evaluated against a Logistic Regression baseline using stratified k-fold
+cross-validation.
+
+All preprocessing (standard scaling, label encoding) is encapsulated within
+scikit-learn \texttt{Pipeline} objects to prevent data leakage.  Trained
+artefacts are serialised with \texttt{joblib} and loaded at application startup
+for low-latency inference.
+
+% ───────────────────────────────────────────────────────────────────────────
+\section{3.6\quad System Testing and Evaluation}
+
+Testing is conducted at multiple levels to ensure correctness, reliability,
+and usability across the full system:
+
+\begin{itemize}
+  \item \textbf{Unit tests} --- individual model training functions and
+        preprocessing steps are verified with pytest.
+  \item \textbf{API integration tests} --- FastAPI endpoints are exercised with
+        httpx to confirm correct request handling, error responses, and output
+        schema conformance.
+  \item \textbf{Frontend component tests} --- React components are tested with
+        Vitest and React Testing Library.
+  \item \textbf{Responsive layout checks} --- interface behaviour is validated
+        across standard viewport widths.
+\end{itemize}
+
+Machine learning model performance is quantified using Root Mean Square Error
+(RMSE), Mean Absolute Error (MAE), and the coefficient of determination
+($R^{2}$) for regression tasks, and Accuracy together with macro-averaged
+F1-Score for classification.  All metrics are computed on held-out test sets
+that are strictly isolated during training.
+
+% ───────────────────────────────────────────────────────────────────────────
+\section{3.7\quad Expected Outcome}
+
+The anticipated deliverable is a fully operational, end-to-end web application
+that accepts routine soil-test inputs and returns science-backed property
+estimates and crop recommendations through a clear, non-technical interface.
+The project bridges the gap between academic machine learning research on soil
+science and a practical tool that can be evaluated in real agronomic contexts.
+
+Directions for future development include:
+
+\begin{itemize}
+  \item Expanding the training dataset with regionally specific soil samples to
+        improve generalisation.
+  \item Adding interactive data visualisation dashboards for trend analysis and
+        field mapping.
+  \item Integrating remote-sensing and weather API feeds to enrich the input
+        feature set.
+  \item Containerising the backend with Docker for reproducible deployment
+        across environments.
+\end{itemize}
+
+\vspace{1.5cm}
+\hrule
+\vspace{0.5cm}
+{\small\itshape This document is a preliminary draft submitted for IDP review
+and is subject to revision.}
+
+\end{document}

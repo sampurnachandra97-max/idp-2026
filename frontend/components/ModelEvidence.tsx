@@ -87,6 +87,23 @@ export function ModelEvidence() {
           <dd>{crop.crops}</dd>
         </div>
       </dl>
+
+      {card.fertility && (
+        <dl className="kpis kpis-three" style={{ marginTop: "16px" }}>
+          <div className="card">
+            <dt>Fertility model ({card.fertility.samples} samples)</dt>
+            <dd style={{ fontSize: "20px", fontWeight: 600 }}>{card.fertility.selected_model}</dd>
+          </div>
+          <div className="card">
+            <dt>Fertility test accuracy</dt>
+            <dd>{percent(card.fertility.test.accuracy)}</dd>
+          </div>
+          <div className="card">
+            <dt>Fertility weighted F1</dt>
+            <dd>{percent(card.fertility.test.weighted_f1)}</dd>
+          </div>
+        </dl>
+      )}
       <p className="section-note">
         Crop ranking uses {crop.selected_model} on climate and pH, tested on a tidy public benchmark, so
         field accuracy will be lower. The benchmark’s N, P and K are excluded because they are not on the

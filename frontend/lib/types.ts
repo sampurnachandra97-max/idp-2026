@@ -42,6 +42,27 @@ export interface Analysis {
   crops: CropFit[];
   actions: Action[];
   warnings: string[];
+  fertility?: FertilityResult;
+  crop_suitability?: CropSuitability;
+}
+
+export interface FertilityResult {
+  class: number;
+  label: string;
+  confidence: number;
+}
+
+export interface CropEvaluation {
+  name: string;
+  suitable: boolean;
+  criteria: string;
+}
+
+export interface CropSuitability {
+  millets: string[];
+  vegetables: string[];
+  detailed_millets?: CropEvaluation[];
+  detailed_vegetables?: CropEvaluation[];
 }
 
 export interface TargetReport {
@@ -62,6 +83,13 @@ export interface ModelCard {
     test_samples: number;
     test_fields: number;
     targets: TargetReport[];
+  };
+  fertility?: {
+    samples: number;
+    classes: number[];
+    class_labels: Record<number, string>;
+    selected_model: string;
+    test: { accuracy: number; macro_f1: number; weighted_f1: number };
   };
   crop: {
     samples: number;

@@ -49,5 +49,21 @@
     "1": "Fertile",
     "2": "High Fertility"
   },
-  "clean_file": "E:\\idp_sampurna\\backend\\data\\clean\\soil_fertility_clean.csv"
+  "millet_suitability_summary": {
+    "Pearl Millet (Bajra)": 794,
+    "Sorghum (Jowar)": 572,
+    "Finger Millet (Ragi)": 579,
+    "Foxtail Millet (Kangni)": 824,
+    "Barnyard Millet (Sanwa)": 869
+  },
+  "vegetable_suitability_summary": {
+    "Tomato": 313,
+    "Onion": 311,
+    "Brinjal": 586,
+    "Okra": 658,
+    "Spinach": 353,
+    "Cabbage": 313
+  },
+  "clean_file": "E:\\idp_sampurna\\backend\\data\\clean\\soil_fertility_clean.csv",
+  "detailed_file": "E:\\idp_sampurna\\backend\\data\\clean\\soil_fertility_with_crop_suitability.csv"
 }

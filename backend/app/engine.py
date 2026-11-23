@@ -161,4 +161,28 @@ class Engine:
         fertility = self._predict_fertility(features)
         if fertility is not None:
             result["fertility"] = fertility
+
+        # Evaluate millet and vegetable suitability
+        nutrients = {r["key"]: r["value"] for r in readings}
+        result["crop_suitability"] = {
+            "millets": [
+                crop for crop, suitable in [
+                    ("Pearl Millet (Bajra)", (6.5 <= nutrients["pH"] <= 8.5) and (nutrients["EC"] <= 1.5) and (nutrients["N"] >= 100) and (nutrients["P"] >= 5.0) and (nutrients["K"] >= 100)),
+                    ("Sorghum (Jowar)", (6.5 <= nutrients["pH"] <= 8.6) and (nutrients["EC"] <= 1.5) and (nutrients["N"] >= 150) and (nutrients["P"] >= 7.0) and (nutrients["K"] >= 120)),
+                    ("Finger Millet (Ragi)", (6.0 <= nutrients["pH"] <= 7.8) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 120) and (nutrients["P"] >= 6.5) and (nutrients["K"] >= 100)),
+                    ("Foxtail Millet (Kangni)", (6.2 <= nutrients["pH"] <= 8.2) and (nutrients["EC"] <= 1.2) and (nutrients["N"] >= 80) and (nutrients["K"] >= 80)),
+                    ("Barnyard Millet (Sanwa)", (6.0 <= nutrients["pH"] <= 8.5) and (nutrients["EC"] <= 1.2) and (nutrients["K"] >= 60)),
+                ] if suitable
+            ],
+            "vegetables": [
+                crop for crop, suitable in [
+                    ("Tomato", (6.5 <= nutrients["pH"] <= 7.8) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 180) and (nutrients["P"] >= 7.5) and (nutrients["K"] >= 180) and (nutrients["OC"] >= 0.35)),
+                    ("Onion", (6.5 <= nutrients["pH"] <= 7.8) and (nutrients["EC"] <= 0.8) and (nutrients["N"] >= 160) and (nutrients["P"] >= 7.0) and (nutrients["K"] >= 150) and (nutrients["S"] >= 5.0)),
+                    ("Brinjal", (6.5 <= nutrients["pH"] <= 8.0) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 170) and (nutrients["P"] >= 6.5) and (nutrients["K"] >= 140)),
+                    ("Okra", (6.5 <= nutrients["pH"] <= 8.2) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 150) and (nutrients["P"] >= 6.0) and (nutrients["K"] >= 120)),
+                    ("Spinach", (6.5 <= nutrients["pH"] <= 7.8) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 220) and (nutrients["Fe"] >= 2.0)),
+                    ("Cabbage", (6.5 <= nutrients["pH"] <= 7.8) and (nutrients["EC"] <= 1.0) and (nutrients["N"] >= 200) and (nutrients["P"] >= 7.5) and (nutrients["K"] >= 180) and (nutrients["B"] >= 0.25)),
+                ] if suitable
+            ],
+        }
         return result

@@ -8,16 +8,6 @@ import { DatasetUploader } from "@/components/DatasetUploader";
 import { FIELDS, formatValue, toPayload, validate, type FormErrors, type FormValues } from "@/lib/soil";
 import type { Analysis, Estimate, Level, Reading } from "@/lib/types";
 
-export const PROPERTY_NAMES: Record<string, string> = {
-  OC: "Organic carbon",
-  S: "Sulphur",
-  Zn: "Zinc",
-  B: "Boron",
-  Fe: "Iron",
-  Mn: "Manganese",
-  Cu: "Copper",
-};
-
 const EMPTY_VALUES = Object.fromEntries(FIELDS.map(({ key }) => [key, ""])) as FormValues;
 
 const LEVEL_ICON: Record<Level, LucideIcon> = { ok: CircleCheck, watch: TriangleAlert, act: CircleAlert };

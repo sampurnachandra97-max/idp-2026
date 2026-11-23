@@ -28,32 +28,21 @@
   margin-top: 28px;
 }
 
-.dash-nav button {
+.dash-nav a {
   display: flex;
   align-items: center;
   gap: 10px;
-  width: 100%;
   padding: 9px 10px;
-  border: 0;
   border-radius: 8px;
-  background: none;
-  color: var(--muted);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
-  transition: background-color 140ms ease, color 140ms ease;
-}
-
-.dash-nav button svg {
-  flex: none;
-}
-
-.dash-nav button:hover,
-.dash-nav button[aria-current="page"] {
   background: var(--page);
   color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.dash-nav a svg {
+  flex: none;
 }
 
 .sr-only {
@@ -295,8 +284,7 @@ legend {
   opacity: 0.6;
 }
 
-.results h1,
-.dash-section > h1 {
+.results h1 {
   font-size: clamp(24px, 2.2vw, 30px);
   font-weight: 400;
   line-height: 1.15;
@@ -315,10 +303,6 @@ legend {
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--surface);
-}
-
-.kpis-three {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .kpis .card {
@@ -371,7 +355,6 @@ legend {
 .notice {
   padding: 11px 14px;
   border: 1px solid var(--line);
-  border-left: 3px solid var(--watch);
   border-radius: 6px;
   background: var(--surface);
 }
@@ -525,12 +508,6 @@ legend {
   color: var(--muted);
 }
 
-/* Model performance */
-.dash-section:not([hidden]) {
-  display: grid;
-  gap: 14px;
-}
-
 .show-more {
   align-self: flex-start;
   margin-top: 8px;
@@ -544,12 +521,6 @@ legend {
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
-}
-
-.section-note {
-  max-width: 68em;
-  color: var(--muted);
-  font-size: 14px;
 }
 
 .table-scroll {
@@ -579,8 +550,7 @@ thead th {
   vertical-align: bottom;
 }
 
-tbody th,
-.strong {
+tbody th {
   font-weight: 600;
 }
 
@@ -592,14 +562,6 @@ th.num,
 td.num {
   text-align: right;
   font-variant-numeric: tabular-nums;
-}
-
-.dash-credits {
-  max-width: 76em;
-  margin-top: 28px;
-  color: var(--muted);
-  font-size: 12.5px;
-  line-height: 18px;
 }
 
 @media (max-width: 1240px) {
@@ -654,7 +616,7 @@ td.num {
     scrollbar-width: none;
   }
 
-  .dash-nav button {
+  .dash-nav a {
     flex: none;
     width: auto;
     white-space: nowrap;
@@ -691,15 +653,6 @@ td.num {
 
   .kpis .card:nth-child(n + 3) {
     border-top: 1px solid var(--line);
-  }
-
-  .kpis-three {
-    grid-template-columns: 1fr;
-  }
-
-  .kpis-three .card + .card {
-    border-top: 1px solid var(--line);
-    border-left: 0;
   }
 
   .sample-form {

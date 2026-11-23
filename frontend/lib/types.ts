@@ -64,37 +64,3 @@ export interface CropSuitability {
   detailed_millets?: CropEvaluation[];
   detailed_vegetables?: CropEvaluation[];
 }
-
-export interface TargetReport {
-  target: string;
-  selected_model: string;
-  test: { r2: number; mae: number; rmse: number };
-  baseline_mae: number;
-  interval_test_coverage: number;
-  random_split_r2: number;
-  reliability: Reliability;
-}
-
-export interface ModelCard {
-  trained_at: string;
-  soil: {
-    samples: number;
-    fields: number;
-    test_samples: number;
-    test_fields: number;
-    targets: TargetReport[];
-  };
-  fertility?: {
-    samples: number;
-    classes: number[];
-    class_labels: Record<number, string>;
-    selected_model: string;
-    test: { accuracy: number; macro_f1: number; weighted_f1: number };
-  };
-  crop: {
-    samples: number;
-    crops: number;
-    selected_model: string;
-    test: { accuracy: number; macro_f1: number; top3_accuracy: number };
-  };
-}
